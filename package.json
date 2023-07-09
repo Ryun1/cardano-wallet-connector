@@ -1,5 +1,5 @@
 {
-  "homepage": "http://ryun1.github.io/cardano-wallet-connector/tree/cip-95-demos",
+  "homepage": "http://ryun1.github.io/cardano-wallet-connector/",
   "name": "cardano-wallet-connector",
   "version": "0.1.0",
   "private": true,
