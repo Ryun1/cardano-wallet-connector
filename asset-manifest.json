@@ -1,21 +1,21 @@
 {
   "files": {
-    "main.css": "/cardano-wallet-connector/tree/cip-95-demos/static/css/main.415169cd.css",
-    "main.js": "/cardano-wallet-connector/tree/cip-95-demos/static/js/main.7969485c.js",
-    "static/js/787.eb14398a.chunk.js": "/cardano-wallet-connector/tree/cip-95-demos/static/js/787.eb14398a.chunk.js",
-    "static/media/icons-20.eot": "/cardano-wallet-connector/tree/cip-95-demos/static/media/icons-20.cde033c5d3f24283f757.eot",
-    "static/media/icons-20.woff": "/cardano-wallet-connector/tree/cip-95-demos/static/media/icons-20.1ef633d3a28d0986f63e.woff",
-    "static/media/icons-20.ttf": "/cardano-wallet-connector/tree/cip-95-demos/static/media/icons-20.57b3e708b232fdcb64f9.ttf",
-    "static/media/icons-16.eot": "/cardano-wallet-connector/tree/cip-95-demos/static/media/icons-16.2368f88a078780d80145.eot",
-    "static/media/icons-16.woff": "/cardano-wallet-connector/tree/cip-95-demos/static/media/icons-16.1645f50fb7f7c109f64e.woff",
-    "static/media/icons-16.ttf": "/cardano-wallet-connector/tree/cip-95-demos/static/media/icons-16.13933033991f62d6bb64.ttf",
-    "index.html": "/cardano-wallet-connector/tree/cip-95-demos/index.html",
-    "main.415169cd.css.map": "/cardano-wallet-connector/tree/cip-95-demos/static/css/main.415169cd.css.map",
-    "main.7969485c.js.map": "/cardano-wallet-connector/tree/cip-95-demos/static/js/main.7969485c.js.map",
-    "787.eb14398a.chunk.js.map": "/cardano-wallet-connector/tree/cip-95-demos/static/js/787.eb14398a.chunk.js.map"
+    "main.css": "/cardano-wallet-connector/static/css/main.9168fdac.css",
+    "main.js": "/cardano-wallet-connector/static/js/main.f199b8cb.js",
+    "static/js/787.eb14398a.chunk.js": "/cardano-wallet-connector/static/js/787.eb14398a.chunk.js",
+    "static/media/icons-20.eot": "/cardano-wallet-connector/static/media/icons-20.cde033c5d3f24283f757.eot",
+    "static/media/icons-20.woff": "/cardano-wallet-connector/static/media/icons-20.1ef633d3a28d0986f63e.woff",
+    "static/media/icons-20.ttf": "/cardano-wallet-connector/static/media/icons-20.57b3e708b232fdcb64f9.ttf",
+    "static/media/icons-16.eot": "/cardano-wallet-connector/static/media/icons-16.2368f88a078780d80145.eot",
+    "static/media/icons-16.woff": "/cardano-wallet-connector/static/media/icons-16.1645f50fb7f7c109f64e.woff",
+    "static/media/icons-16.ttf": "/cardano-wallet-connector/static/media/icons-16.13933033991f62d6bb64.ttf",
+    "index.html": "/cardano-wallet-connector/index.html",
+    "main.9168fdac.css.map": "/cardano-wallet-connector/static/css/main.9168fdac.css.map",
+    "main.f199b8cb.js.map": "/cardano-wallet-connector/static/js/main.f199b8cb.js.map",
+    "787.eb14398a.chunk.js.map": "/cardano-wallet-connector/static/js/787.eb14398a.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.415169cd.css",
-    "static/js/main.7969485c.js"
+    "static/css/main.9168fdac.css",
+    "static/js/main.f199b8cb.js"
   ]
 }
