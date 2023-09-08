@@ -688,7 +688,7 @@ export default class App extends React.Component
                 this.setState({regStakeKeyHashHex: Buffer.from(stakeKeyHash.to_bytes()).toString('hex')});
 
                 // Make a StakeCredential from the hash
-                const stakeCredential = StakeCredential.from_keyhash(stakeKeyHash);
+                const stakeCredential = Credential.from_keyhash(stakeKeyHash);
                 console.log("Reg stake Credential: ", Buffer.from(stakeCredential.to_bytes()).toString('hex'));
 
                 // Make a StakeAddress Hex from the credential
@@ -727,7 +727,7 @@ export default class App extends React.Component
                 this.setState({unregStakeKeyHashHex: Buffer.from(stakeKeyHash.to_bytes()).toString('hex')});
 
                 // Make a StakeCredential from the hash
-                const stakeCredential = StakeCredential.from_keyhash(stakeKeyHash);
+                const stakeCredential = Credential.from_keyhash(stakeKeyHash);
                 console.log("Unreg stake Credential: ", Buffer.from(stakeCredential.to_bytes()).toString('hex'));
 
                 // Make a StakeAddress Hex from the credential
