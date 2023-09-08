@@ -840,8 +840,7 @@ export default class App extends React.Component
 
         // Make an example metadata anchor, using my github example
         const dataHash = AnchorDataHash.from_hex("9bba8233cdd086f0325daba465d568a88970d42536f9e71e92a80d5922ded885");
-        // const url = CSL.URL.new("https://raw.githubusercontent.com/Ryun1/gov-metadata/main/governace-action/metadata.jsonld");
-        const url = URL.new("example.com");
+        const url = URL.new("https://example.com");
         const anchor = Anchor.new(url, dataHash);
 
         // Create cert object using one Ada as the deposit
