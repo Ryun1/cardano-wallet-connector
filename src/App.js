@@ -26,6 +26,8 @@ import {
     DRep,
     Anchor,
     DrepRegistration,
+    DrepUpdate,
+    DrepDeregistration,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 let Buffer = require('buffer/').Buffer
@@ -832,7 +834,7 @@ export default class App extends React.Component
 
         let dRepRegCert;
         // If there is an anchor
-        if (!this.state.cip95MetadataURL === "") {
+        if (!(this.state.cip95MetadataURL === "")) {
             const anchor = Anchor.new(this.state.cip95MetadataURL, this.state.cip95MetadataHash);
             // Create cert object using one Ada as the deposit
             dRepRegCert = DrepRegistration.new_with_anchor(
@@ -841,6 +843,7 @@ export default class App extends React.Component
                 anchor
             );
         }else{
+            console.log("Not using Anchor")
             dRepRegCert = DrepRegistration.new(
                 dRepCred,
                 BigNum.from_str("1000000"),
@@ -848,6 +851,56 @@ export default class App extends React.Component
         };
         // add cert to tbuilder
         certBuilder.add(Certificate.new_drep_registration(dRepRegCert));
+        this.setState({cip95CertBuilder : certBuilder});
+    }
+
+    // conway alpha
+    buildDRepUpdateCert = async () => {
+
+        // Build DRep Registration Certificate
+        const certBuilder = CertificatesBuilder.new();
+
+        // Get wallet's DRep key
+        const DRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
+        const dRepCred = Credential.from_keyhash(DRepKeyHash);
+
+        let dRepUpdateCert;
+        // If there is an anchor
+        if (!(this.state.cip95MetadataURL === "")) {
+            const anchor = Anchor.new(this.state.cip95MetadataURL, this.state.cip95MetadataHash);
+            // Create cert object using one Ada as the deposit
+            dRepUpdateCert = DrepUpdate.new_with_anchor(
+                dRepCred,
+                BigNum.from_str("1000000"), // deposit
+                anchor
+            );
+        }else{
+            dRepUpdateCert = DrepUpdate.new(
+                dRepCred,
+                BigNum.from_str("1000000"),
+            );
+        };
+        // add cert to tbuilder
+        certBuilder.add(Certificate.new_drep_update(dRepUpdateCert));
+        this.setState({cip95CertBuilder : certBuilder});
+    }
+
+    // conway alpha
+    buildDRepRetirementCert = async () => {
+
+        // Build DRep Registration Certificate
+        const certBuilder = CertificatesBuilder.new();
+
+        // Get wallet's DRep key
+        const DRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
+        const dRepCred = Credential.from_keyhash(DRepKeyHash);
+
+        const dRepRetirementCert = DrepDeregistration.new(
+            dRepCred,
+            BigNum.from_str("1000000"),
+        );
+        // add cert to tbuilder
+        certBuilder.add(Certificate.new_drep_deregistration(dRepRetirementCert));
         this.setState({cip95CertBuilder : certBuilder});
     }
 
@@ -1040,52 +1093,14 @@ export default class App extends React.Component
                                 />
                             </FormGroup>
 
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildDRepRegCert(this.state.cip95MetadataURL, this.state.cip95MetadataHash))}>Build, .signTx() and .submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildDRepUpdateCert())}>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
 
                     <Tab id="4" title="👴 DRep Retirement" panel={
                         <div style={{marginLeft: "20px"}}>
 
-                            <FormGroup
-                                helperText=""
-                                label="Retirement Epoch"
-                            >
-                                <InputGroup
-                                    disabled={false}
-                                    leftIcon="id-number"
-                                    onChange={(event) => this.setState({dRepRetirementEpoch: event.target.value})}
-                                    defaultValue={this.state.dRepRetirementEpoch}
-
-                                />
-                            </FormGroup>
-
-                            <FormGroup
-                                helperText="https://my-metadata-url.json"
-                                label="Optional: Metadata URL"
-                            >
-                                <InputGroup
-                                    disabled={false}
-                                    leftIcon="id-number"
-                                    onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-
-                                />
-                            </FormGroup>
-
-                            <FormGroup
-                                helperText=""
-                                label="Optional: Metadata Hash"
-                            >
-                                <InputGroup
-                                    disabled={false}
-                                    leftIcon="id-number"
-                                    onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataHash}
-
-                                />
-                            </FormGroup>
-
-                    <button style={{padding: "10px"}} onClick={ () => this.buildSubmitMetadataTx({ DRep_id : this.state.dRepIDBech32, retirement_epoch : this.state.dRepRetirementEpoch, metadata_url : this.state.cip95MetadataURL, metadata_hash : this.state.cip95MetadataHash}) }>Build, .signTx() and .submitTx()</button>
+                    <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildDRepRetirementCert())}>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
                     <Tab id="5" title="🗳 Vote" panel={
