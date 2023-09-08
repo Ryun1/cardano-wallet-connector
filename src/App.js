@@ -16,11 +16,6 @@ import {
     TransactionWitnessSet,
     Transaction,
     Credential,
-    GeneralTransactionMetadata,
-    AuxiliaryData,
-    encode_json_str_to_metadatum,
-    MetadataJsonSchema,
-    TransactionMetadatumLabels,
     Certificate,
     PublicKey,
     RewardAddress,
@@ -894,7 +889,7 @@ export default class App extends React.Component
         this.setState({cip95CertBuilder : certBuilder});
     }
 
-    buildSubmitMetadataTx = async (txMetadata) => {
+    buildSubmitTestTx = async () => {
 
         // Initialize builder with protocol parameters
         const txBuilder = await this.initTransactionBuilder();
@@ -911,19 +906,6 @@ export default class App extends React.Component
             ),
         );
 
-        // Add metadata to tx, have to jump through some data structure hoops 
-        const metadata = encode_json_str_to_metadatum(JSON.stringify(txMetadata), MetadataJsonSchema.NoConversions);
-        const auxMetadata = AuxiliaryData.new();
-        // Map metadata to metadatum label
-        const transactionMetadata = GeneralTransactionMetadata.new();
-        transactionMetadata.insert(this.state.cip95MetadatumLabel, metadata);
-        auxMetadata.set_metadata(transactionMetadata);
-        const metadatumLabels = TransactionMetadatumLabels.new();
-        metadatumLabels.add(this.state.cip95MetadatumLabel);
-        
-        // Add metadata to tx builder for correct fee calculation
-        txBuilder.add_json_metadatum_with_schema(metadatumLabels.get(0), JSON.stringify(txMetadata), MetadataJsonSchema.NoConversions);
-
         // Find the available UTXOs in the wallet and use them as Inputs for the transaction
         const txUnspentOutputs = await this.getTxUnspentOutputs();
         txBuilder.add_inputs_from(txUnspentOutputs, 1)
@@ -939,7 +921,6 @@ export default class App extends React.Component
         const tx = Transaction.new(
             txBody,
             TransactionWitnessSet.from_bytes(transactionWitnessSet.to_bytes()),
-            auxMetadata,
         );
 
         // Ask wallet to to provide signature (witnesses) for the transaction
@@ -953,12 +934,11 @@ export default class App extends React.Component
         const signedTx = Transaction.new(
             tx.body(),
             transactionWitnessSet,
-            tx.auxiliary_data(),
         );
         
         // Submit built signed transaction to chain, via wallet's submit transaction endpoint
         const result = await this.API.submitTx(Buffer.from(signedTx.to_bytes(), "utf8").toString("hex"));
-        console.log("Built and submitted metadata transaction: ", result)
+        console.log("Built and submitted test transaction: ", result)
         // Set results so they can be rendered
         const cip95ResultTx = Buffer.from(signedTx.to_bytes(), "utf8").toString('hex');
         const cip95ResultHash = result;
@@ -1077,10 +1057,10 @@ export default class App extends React.Component
                                 />
                             </FormGroup>
 
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitMetadataTx({ DRep_id : this.state.dRepIDBech32, stake_credential : this.state.stakeKey, metadata_url : this.state.cip95MetadataURL, metadata_hash : this.state.cip95MetadataHash}) }>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildDRepRegCert(this.state.cip95MetadataURL, this.state.cip95MetadataHash))}>.submitTx()</button>
                         </div>
                     } />
-                    <Tab id="3" title="3. Submit DRep Retirement 👴" panel={
+                    <Tab id="3" title="Submit DRep Retirement 👴" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1125,7 +1105,7 @@ export default class App extends React.Component
                     <button style={{padding: "10px"}} onClick={ () => this.buildSubmitMetadataTx({ DRep_id : this.state.dRepIDBech32, retirement_epoch : this.state.dRepRetirementEpoch, metadata_url : this.state.cip95MetadataURL, metadata_hash : this.state.cip95MetadataHash}) }>.submitTx()</button>
                         </div>
                     } />
-                    <Tab id="4" title="4. Submit Vote 🗳" panel={
+                    <Tab id="4" title="Submit Vote 🗳" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1179,10 +1159,10 @@ export default class App extends React.Component
 
                                 />
                             </FormGroup>
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitMetadataTx({ governance_action_id : this.state.voteGovActionID, role : "dRep", witness : "witness", metadata_url : this.state.cip95MetadataURL, metadata_hash : this.state.cip95MetadataHash, vote : this.state.voteChoice}) }>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>.submitTx()</button>
                         </div>
                     } />
-                    <Tab id="5" title="5. Submit Governance Action 💡" panel={
+                    <Tab id="5" title="Submit Governance Action 💡" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1236,7 +1216,14 @@ export default class App extends React.Component
 
                                 />
                             </FormGroup>
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitMetadataTx({ governance_type : this.state.govActionType, gov_action_deposit : this.state.govActionDeposit, last_gov_action_hash : this.state.govActionHash, metadata_url : this.state.cip95MetadataURL, metadata_hash : this.state.cip95MetadataHash}) }>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>.submitTx()</button>
+
+                        </div>
+                    } />
+                    <Tab id="6" title="Submit Test Transaction" panel={
+                        <div style={{marginLeft: "20px"}}>
+
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>.submitTx()</button>
 
                         </div>
                     } />
