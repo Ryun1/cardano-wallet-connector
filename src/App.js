@@ -29,11 +29,12 @@ import {
     CertificatesBuilder,
     VoteDelegation,
     DRep,
-
+    AnchorDataHash,
+    Anchor,
+    DrepRegistration,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 let Buffer = require('buffer/').Buffer
-let blake = require('blakejs')
 let { bech32 } = require('bech32')
 
 
@@ -758,7 +759,7 @@ export default class App extends React.Component
         // Set change address, incase too much ADA provided for fee
         txBuilder.add_change_if_needed(shelleyChangeAddress)
         
-        // Set the certificate
+        // Set the certificate to the current certbuilder
         txBuilder.set_certs_builder(this.state.cip95CertBuilder);
 
         // Build transaction body
@@ -771,15 +772,14 @@ export default class App extends React.Component
             TransactionWitnessSet.from_bytes(transactionWitnessSet.to_bytes()),
         );
 
+        console.log("UnSigned Tx: ", tx.to_json());
+
         // Ask wallet to to provide signature (witnesses) for the transaction
         let txVkeyWitnesses;
         
         txVkeyWitnesses = await this.API.signTx(Buffer.from(tx.to_bytes(), "utf8").toString("hex"), true);
 
-
-        console.log("HERE");
-        console.log("HERE");
-        console.log("HERE");
+        console.log("Wallet signed Tx")
 
         // Create witness set object using the witnesses provided by the wallet
         txVkeyWitnesses = TransactionWitnessSet.from_bytes(Buffer.from(txVkeyWitnesses, "hex"));
@@ -790,6 +790,8 @@ export default class App extends React.Component
             tx.body(),
             transactionWitnessSet,
         );
+
+        console.log("Signed Tx: ", signedTx.to_json());
         
         // Submit built signed transaction to chain, via wallet's submit transaction endpoint
         const result = await this.API.submitTx(Buffer.from(signedTx.to_bytes(), "utf8").toString("hex"));
@@ -803,6 +805,36 @@ export default class App extends React.Component
         this.setState({cip95ResultWitness});
     }
 
+    // conway alpha
+    buildDRepRegCert = async (anchorURL, anchorHash) => {
+
+        // Build DRep Registration Certificate
+        const certBuilder = CertificatesBuilder.new();
+
+        // Get wallet's DRep key
+        const DRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
+        const dRepCred = Credential.from_keyhash(DRepKeyHash);
+
+        // Make an example metadata anchor, using my github example
+        const dataHash = AnchorDataHash.from_hex("9bba8233cdd086f0325daba465d568a88970d42536f9e71e92a80d5922ded885");
+        // const url = CSL.URL.new("https://raw.githubusercontent.com/Ryun1/gov-metadata/main/governace-action/metadata.jsonld");
+        const url = URL.new("example.com");
+        const anchor = Anchor.new(url, dataHash);
+
+        // Create cert object using one Ada as the deposit
+        const dRepRegCert = DrepRegistration.new_with_anchor(
+            dRepCred,
+            BigNum.from_str("1000000"), // deposit
+            anchor
+        );
+
+        // add cert to tbuilder
+        certBuilder.add(Certificate.new_drep_registration(dRepRegCert));
+        
+        this.setState({cip95CertBuilder : certBuilder});
+    }
+
+    // conway alpha
     buildVoteDelegationCert = async (target) => {
     
         // Build Vote Delegation Certificate
@@ -830,8 +862,6 @@ export default class App extends React.Component
     
         // add cert to tbuilder
         certBuilder.add(Certificate.new_vote_delegation(voteDelegationCert));
-
-        console.log("KIND:",(Certificate.new_vote_delegation(voteDelegationCert)).kind());
         
         this.setState({cip95CertBuilder : certBuilder});
     }
@@ -992,19 +1022,18 @@ export default class App extends React.Component
                             <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildVoteDelegationCert({dRep: this.state.voteDelegationTarget}))}>.submitTx()</button>
                         </div>
                     } />
-                    <Tab id="2" title="2. Submit DRep Registration 👷‍♂️" panel={
+                    <Tab id="2" title="Submit DRep Registration 👷‍♂️" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
-                                helperText="https://my-metadata-url.json"
+                                helperText=""
                                 label="Optional: Metadata URL"
                             >
                                 <InputGroup
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataURL}
-
+                                    defaultValue="https://raw.githubusercontent.com/Ryun1/gov-metadata/main/governace-action/metadata.jsonld"
                                 />
                             </FormGroup>
 
