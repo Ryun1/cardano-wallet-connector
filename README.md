@@ -6,6 +6,7 @@ Currently corresponding CIP-95 commit: [1f75f99](https://github.com/cardano-foun
 | --- | ------------- | ---------------- | ------------------- |
 | [1.4.0](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.4.0) | [fbc5fcb](https://github.com/cardano-foundation/CIPs/pull/509/commits/fbc5fcbb127313ccfd2a30376145f63627f3afd9) | [1.4.0](https://github.com/Ryun1/cip95-demos-wallet/releases/tag/1.4.0) | No |
 | [1.4.0](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.4.0) | [1f75f99](https://github.com/cardano-foundation/CIPs/pull/509/commits/1f75f990c4e8fdf308c3ed209bac723a84822931) | [1.4.0](https://github.com/Ryun1/cip95-demos-wallet/releases/tag/1.4.0) | [Yes](https://ryun1.github.io/cip95-cardano-wallet-connector/) |
+| 1.5.0 (in progress) | [d02b02f](https://github.com/Ryun1/CIPs/commit/d02b02faf9733e3099f71fa2922f8de02fa1e0a3) | [1.4.0](https://github.com/Ryun1/cip95-demos-wallet/releases/tag/1.4.0) | No |
 
 ## CIP-95/Conway Features Supported Notes
 
