@@ -24,7 +24,6 @@ import {
     CertificatesBuilder,
     VoteDelegation,
     DRep,
-    AnchorDataHash,
     Anchor,
     DrepRegistration,
 } from "@emurgo/cardano-serialization-lib-asmjs"
@@ -93,7 +92,6 @@ export default class App extends React.Component
             cip95ResultWitness: "",
             cip95MetadataURL: undefined,
             cip95MetadataHash: undefined,
-            cip95MetadatumLabel: BigNum.from_str("3921"),
             
             // Conway Alpha
             cip95CertBuilder: "",
@@ -108,8 +106,6 @@ export default class App extends React.Component
             voteGovActionID: "gov_action...hd74s",
             voteChoice: undefined,
 
-            // governance action
-            govActionDeposit: 100,
             govActionHash: "b4e4184bfedf920fec53cdc327de4da661ae427784c0ccca9e3c2f50",
             govActionType: undefined,
 
@@ -362,42 +358,6 @@ export default class App extends React.Component
     }
 
     /**
-     * The collateral is need for working with Plutus Scripts
-     * Essentially you need to provide collateral to pay for fees if the
-     * script execution fails after the script has been validated...
-     * this should be an uncommon occurrence and would suggest the smart contract
-     * would have been incorrectly written.
-     * The amount of collateral to use is set in the wallet
-     * @returns {Promise<void>}
-     */
-    getCollateral = async () => {
-
-        let CollatUtxos = [];
-
-        try {
-
-            let collateral = [];
-
-            const wallet = this.state.whichWalletSelected;
-            if (wallet === "nami") {
-                collateral = await this.API.experimental.getCollateral();
-            } else {
-                collateral = await this.API.getCollateral();
-            }
-
-            for (const x of collateral) {
-                const utxo = TransactionUnspentOutput.from_bytes(Buffer.from(x, "hex"));
-                CollatUtxos.push(utxo)
-                // console.log(utxo)
-            }
-            this.setState({CollatUtxos})
-        } catch (err) {
-            console.log(err)
-        }
-
-    }
-
-    /**
      * Gets the current balance of in Lovelace in the user's wallet
      * This doesnt resturn the amounts of all other Tokens
      * For other tokens you need to look into the full UTXO list
@@ -458,7 +418,6 @@ export default class App extends React.Component
             const raw = await this.API.getUsedAddresses();
             const rawFirst = raw[0];
             const usedAddress = Address.from_bytes(Buffer.from(rawFirst, "hex")).to_bech32()
-            // console.log(rewardAddress)
             this.setState({usedAddress})
 
         } catch (err) {
@@ -468,7 +427,7 @@ export default class App extends React.Component
 
     checkIfCIP95MethodsAvailable = async () => {
         const hasCIP95Methods =( this.API.hasOwnProperty('getPubDRepKey'));
-        console.log(`Has CIP95 .getPubDRepKey() and .getActivePubStakeKeys: ${hasCIP95Methods}`)
+        console.log(`Has CIP95 .getPubDRepKey(): ${hasCIP95Methods}`)
         return hasCIP95Methods;
     }
     /**
@@ -520,6 +479,8 @@ export default class App extends React.Component
                         cip95ResultTx: "",
                         cip95ResultHash: "",
                         cip95ResultWitness: "",
+                        cip95MetadataURL: "",
+                        cip95MetadataHash: "",
                         cip95CertBuilder: "",
                         voteDelegationTarget: "",
                     });
@@ -531,7 +492,6 @@ export default class App extends React.Component
                     if (walletEnabled) {
                         await this.getNetworkId();
                         await this.getUtxos();
-                        // await this.getCollateral();
                         await this.getBalance();
                         await this.getChangeAddress();
                         await this.getRewardAddresses();
@@ -561,6 +521,8 @@ export default class App extends React.Component
                             cip95ResultHash: "",
                             cip95ResultWitness: "",
                             cip95CertBuilder: "",
+                            cip95MetadataURL: "",
+                            cip95MetadataHash: "",
                             voteDelegationTarget: "",
                         });
                     }
@@ -590,6 +552,8 @@ export default class App extends React.Component
                     cip95ResultTx: "",
                     cip95ResultHash: "",
                     cip95ResultWitness: "",
+                    cip95MetadataURL: "",
+                    cip95MetadataHash: "",
                     cip95CertBuilder: "",
                     voteDelegationTarget: "",
                 });
@@ -826,10 +790,15 @@ export default class App extends React.Component
         this.setState({cip95ResultTx});
         this.setState({cip95ResultHash});
         this.setState({cip95ResultWitness});
+        
+        // Reset some state
+        this.setState({cip95MetadataURL : ""});
+        this.setState({cip95MetadataHash : ""});
+        this.setState({cip95CertBuilder : ""});
     }
 
     // conway alpha
-    buildDRepRegCert = async (anchorURL, anchorHash) => {
+    buildDRepRegCert = async () => {
 
         // Build DRep Registration Certificate
         const certBuilder = CertificatesBuilder.new();
@@ -838,17 +807,22 @@ export default class App extends React.Component
         const DRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
         const dRepCred = Credential.from_keyhash(DRepKeyHash);
 
-        // Make an example metadata anchor, using my github example
-        const dataHash = AnchorDataHash.from_hex("9bba8233cdd086f0325daba465d568a88970d42536f9e71e92a80d5922ded885");
-        const url = URL.new("https://example.com");
-        const anchor = Anchor.new(url, dataHash);
-
-        // Create cert object using one Ada as the deposit
-        const dRepRegCert = DrepRegistration.new_with_anchor(
-            dRepCred,
-            BigNum.from_str("1000000"), // deposit
-            anchor
-        );
+        let dRepRegCert;
+        // If there is an anchor
+        if (!this.state.cip95MetadataURL === "") {
+            const anchor = Anchor.new(this.state.cip95MetadataURL, this.state.cip95MetadataHash);
+            // Create cert object using one Ada as the deposit
+            dRepRegCert = DrepRegistration.new_with_anchor(
+                dRepCred,
+                BigNum.from_str("1000000"), // deposit
+                anchor
+            );
+        }else{
+            dRepRegCert = DrepRegistration.new(
+                dRepCred,
+                BigNum.from_str("1000000"),
+            );
+        };
 
         // add cert to tbuilder
         certBuilder.add(Certificate.new_drep_registration(dRepRegCert));
@@ -862,7 +836,14 @@ export default class App extends React.Component
         // Build Vote Delegation Certificate
         const certBuilder = CertificatesBuilder.new();
         
-        const stakeKeyHash = Ed25519KeyHash.from_hex(this.state.stakeKeyHashHex);
+        // Use stake key hash from wallet
+        let stakeKeyHash;
+        if (this.state.regStakeKeyHashHex === "") {
+            console.log("Warning: Using unregistered stake key for vote delegation");
+            stakeKeyHash = Ed25519KeyHash.from_hex(this.state.unregStakeKeyHashHex);
+        }else{
+            stakeKeyHash = Ed25519KeyHash.from_hex(this.state.regStakeKeyHashHex);
+        };
         const stakeCred = Credential.from_keyhash(stakeKeyHash);
         
         // Create correct DRep
@@ -1007,9 +988,9 @@ export default class App extends React.Component
                 <p><span style={{fontWeight: "bold"}}>.getUnregisteredPubStakeKeys(): </span>{this.state.unregStakeKey}</p>
                 <p><span style={{fontWeight: "lighter"}}> Registered Stake Key Hash (hex): </span>{this.state.unregStakeKeyHashHex}</p>
 
-                <p><span style={{fontWeight: "bold"}}>Build Transaction and then .signTx(): </span></p>
+                <p><span style={{fontWeight: "bold"}}>Use CIP-95 signTx(): </span></p>
                 <Tabs id="cip95" vertical={true} onChange={this.handle95TabId} selectedTab95Id={this.state.selected95TabId}>
-                    <Tab id="1" title="Submit Vote Delegation 🦸‍♀️" panel={
+                    <Tab id="1" title="🦸‍♀️ Vote Delegation" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1021,14 +1002,13 @@ export default class App extends React.Component
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({voteDelegationTarget: event.target.value})}
                                     value={this.state.voteDelegationTarget}
-
                                 />
                             </FormGroup>
 
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildVoteDelegationCert({dRep: this.state.voteDelegationTarget}))}>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildVoteDelegationCert({dRep: this.state.voteDelegationTarget}))}>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
-                    <Tab id="2" title="Submit DRep Registration 👷‍♂️" panel={
+                    <Tab id="2" title="👷‍♂️ DRep Registration" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1039,7 +1019,6 @@ export default class App extends React.Component
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                    defaultValue="https://raw.githubusercontent.com/Ryun1/gov-metadata/main/governace-action/metadata.jsonld"
                                 />
                             </FormGroup>
 
@@ -1051,15 +1030,41 @@ export default class App extends React.Component
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataHash}
-
                                 />
                             </FormGroup>
 
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildDRepRegCert(this.state.cip95MetadataURL, this.state.cip95MetadataHash))}>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildDRepRegCert())}>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
-                    <Tab id="3" title="Submit DRep Retirement 👴" panel={
+                    <Tab id="3" title="💫 DRep Update" panel={
+                        <div style={{marginLeft: "20px"}}>
+                                                        <FormGroup
+                                helperText=""
+                                label="Optional: Metadata URL"
+                            >
+                                <InputGroup
+                                    disabled={false}
+                                    leftIcon="id-number"
+                                    onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
+                                />
+                            </FormGroup>
+
+                            <FormGroup
+                                helperText=""
+                                label="Optional: Metadata Hash"
+                            >
+                                <InputGroup
+                                    disabled={false}
+                                    leftIcon="id-number"
+                                    onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
+                                />
+                            </FormGroup>
+
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildDRepRegCert(this.state.cip95MetadataURL, this.state.cip95MetadataHash))}>Build, .signTx() and .submitTx()</button>
+                        </div>
+                    } />
+
+                    <Tab id="4" title="👴 DRep Retirement" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1083,7 +1088,6 @@ export default class App extends React.Component
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataURL}
 
                                 />
                             </FormGroup>
@@ -1101,10 +1105,10 @@ export default class App extends React.Component
                                 />
                             </FormGroup>
 
-                    <button style={{padding: "10px"}} onClick={ () => this.buildSubmitMetadataTx({ DRep_id : this.state.dRepIDBech32, retirement_epoch : this.state.dRepRetirementEpoch, metadata_url : this.state.cip95MetadataURL, metadata_hash : this.state.cip95MetadataHash}) }>.submitTx()</button>
+                    <button style={{padding: "10px"}} onClick={ () => this.buildSubmitMetadataTx({ DRep_id : this.state.dRepIDBech32, retirement_epoch : this.state.dRepRetirementEpoch, metadata_url : this.state.cip95MetadataURL, metadata_hash : this.state.cip95MetadataHash}) }>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
-                    <Tab id="4" title="Submit Vote 🗳" panel={
+                    <Tab id="5" title="🗳 Vote" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1158,10 +1162,10 @@ export default class App extends React.Component
 
                                 />
                             </FormGroup>
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
-                    <Tab id="5" title="Submit Governance Action 💡" panel={
+                    <Tab id="6" title="💡 Governance Action" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1219,7 +1223,7 @@ export default class App extends React.Component
 
                         </div>
                     } />
-                    <Tab id="6" title="Submit Test Transaction" panel={
+                    <Tab id="7" title=" 💯 Test Basic Transaction" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>.submitTx()</button>
