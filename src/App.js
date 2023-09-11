@@ -33,6 +33,10 @@ import {
     GovernanceActionId,
     TransactionHash,
     VotingProcedure,
+    VotingProposalBuilder,
+    VotingProposal,
+    NewConstitutionProposal,
+    Constitution,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 let Buffer = require('buffer/').Buffer
@@ -103,6 +107,7 @@ export default class App extends React.Component
             // Conway Alpha
             certBuilder: "",
             votingBuilder: "",
+            govActionBuilder: "",
 
             // vote delegation
             voteDelegationTarget: "",
@@ -113,10 +118,6 @@ export default class App extends React.Component
             // vote
             voteGovActionID: "gov_action...hd74s",
             voteChoice: undefined,
-
-            govActionHash: "b4e4184bfedf920fec53cdc327de4da661ae427784c0ccca9e3c2f50",
-            govActionType: undefined,
-
         }
 
         /**
@@ -491,6 +492,7 @@ export default class App extends React.Component
                         cip95MetadataHash: "",
                         certBuilder: "",
                         votingBuilder: "",
+                        govActionBuilder: "",
                         voteDelegationTarget: "",
                     });
                 }
@@ -531,6 +533,7 @@ export default class App extends React.Component
                             cip95ResultWitness: "",
                             certBuilder: "",
                             votingBuilder: "",
+                            govActionBuilder: "",
                             cip95MetadataURL: "",
                             cip95MetadataHash: "",
                             voteDelegationTarget: "",
@@ -566,6 +569,7 @@ export default class App extends React.Component
                     cip95MetadataHash: "",
                     certBuilder: "",
                     votingBuilder: "",
+                    govActionBuilder: "",
                     voteDelegationTarget: "",
                 });
             }
@@ -762,6 +766,10 @@ export default class App extends React.Component
             txBuilder.set_voting_builder(this.state.votingBuilder);
         }
 
+        if(!(this.state.govActionBuilder === "")){
+            txBuilder.set_voting_proposal_builder(this.state.govActionBuilder);
+        }
+
         // Build transaction body
         const txBody = txBuilder.build();
         // Make a full transaction, passing in empty witness set
@@ -805,6 +813,7 @@ export default class App extends React.Component
         this.setState({cip95MetadataHash : ""});
         this.setState({certBuilder : ""});
         this.setState({votingBuilder : ""});
+        this.setState({govActionBuilder : ""});
     }
 
     // conway alpha
@@ -956,6 +965,15 @@ export default class App extends React.Component
         votingBuilder.add(voter, govActionId, votingProcedure);
 
         this.setState({votingBuilder});
+    }
+
+    buildNewConstGovAct = async () => {
+        const anchor = Anchor.new(this.state.cip95MetadataURL, this.state.cip95MetadataHash);
+        const constChangeGovAct = NewConstitutionProposal.new(Constitution.new(anchor));
+        const govAct = VotingProposal.new_new_constitution_proposal(constChangeGovAct);
+        const govActionBuilder = VotingProposalBuilder.new();
+        govActionBuilder.add(govAct);
+        this.setState({govActionBuilder});
     }
 
     buildSubmitTestTx = async () => {
@@ -1209,68 +1227,42 @@ export default class App extends React.Component
                             <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildVote())}>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
-                    <Tab id="6" title="💡 Governance Action" panel={
+                    <Tab id="6" title="💡 Governance Action: New Constitution " panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
                                 helperText=""
-                                label="Gov Action Type"
-                            >
-                                <InputGroup
-                                    disabled={false}
-                                    leftIcon="id-number"
-                                    onChange={(event) => this.setState({govActionType: event.target.value})}
-                                    defaultValue={this.state.govActionType}
-
-                                />
-                            </FormGroup>
-
-                            <FormGroup
-                                helperText=""
-                                label="Last Gov Action ID"
-                            >
-                                <InputGroup
-                                    disabled={false}
-                                    leftIcon="id-number"
-                                    onChange={(event) => this.setState({govActionHash: event.target.value})}
-                                    defaultValue={this.state.govActionHash}
-
-                                />
-                            </FormGroup>
-
-                            <FormGroup
-                                helperText="https://my-metadata-url.json"
-                                label="Optional: Metadata URL"
+                                label="Constitution URL"
                             >
                                 <InputGroup
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataURL}
+                                    defaultValue={'https://my-constitution-url.com'}
 
                                 />
                             </FormGroup>
 
                             <FormGroup
                                 helperText=""
-                                label="Optional: Metadata Hash"
+                                label="Constituion Hash"
                             >
                                 <InputGroup
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataHash}
+                                    defaultValue={'fa8633456ad83503e6d62f330c5b34b3857dec2244f0060f641c52bd082629fc'} 
 
                                 />
                             </FormGroup>
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildNewConstGovAct()) }>Build, .signTx() and .submitTx()</button>
 
                         </div>
                     } />
                     <Tab id="7" title=" 💯 Test Basic Transaction" panel={
                         <div style={{marginLeft: "20px"}}>
 
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>Build, .signTx() and .submitTx()</button>
 
                         </div>
                     } />
