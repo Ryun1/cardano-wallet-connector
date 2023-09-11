@@ -37,6 +37,8 @@ import {
     VotingProposal,
     NewConstitutionProposal,
     Constitution,
+    AnchorDataHash,
+    URL,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 let Buffer = require('buffer/').Buffer
@@ -968,7 +970,9 @@ export default class App extends React.Component
     }
 
     buildNewConstGovAct = async () => {
-        const anchor = Anchor.new(this.state.cip95MetadataURL, this.state.cip95MetadataHash);
+        const dataHash = AnchorDataHash.from_hex("fa8633456ad83503e6d62f330c5b34b3857dec2244f0060f641c52bd082629fc");
+        const url = URL.new(this.state.cip95MetadataURL);
+        const anchor = Anchor.new(url, dataHash);
         const constChangeGovAct = NewConstitutionProposal.new(Constitution.new(anchor));
         const govAct = VotingProposal.new_new_constitution_proposal(constChangeGovAct);
         const govActionBuilder = VotingProposalBuilder.new();
@@ -1251,8 +1255,7 @@ export default class App extends React.Component
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    defaultValue={'fa8633456ad83503e6d62f330c5b34b3857dec2244f0060f641c52bd082629fc'} 
-
+                                    defaultValue={'fa8633456ad83503e6d62f330c5b34b3857dec2244f0060f641c52bd082629fc'}
                                 />
                             </FormGroup>
                             <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildNewConstGovAct()) }>Build, .signTx() and .submitTx()</button>
