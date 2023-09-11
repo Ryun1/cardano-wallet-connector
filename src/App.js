@@ -862,7 +862,7 @@ export default class App extends React.Component
                 anchor
             );
         }else{
-            console.log("Not using Anchor")
+            console.log("DRep Registration - not using anchor")
             dRepRegCert = DrepRegistration.new(
                 dRepCred,
                 BigNum.from_str("1000000"),
@@ -1003,6 +1003,7 @@ export default class App extends React.Component
             transactionWitnessSet,
         );
         
+        console.log("SignedTx: ", Buffer.from(signedTx.to_bytes(), "utf8").toString("hex"))
         // Submit built signed transaction to chain, via wallet's submit transaction endpoint
         const result = await this.API.submitTx(Buffer.from(signedTx.to_bytes(), "utf8").toString("hex"));
         console.log("Built and submitted test transaction: ", result)
