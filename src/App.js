@@ -69,13 +69,6 @@ export default class App extends React.Component
             rewardAddress: undefined,
             usedAddress: undefined,
 
-            txBody: undefined,
-            txBodyCborHex_unsigned: "",
-            txBodyCborHex_signed: "",
-            submittedTxHash: "",
-
-            addressBech32SendADA: "addr_test1qrptpa3yfhva8ndvmnfyjl3a49jhhc8apwlz9u8cvm6nmx0lcqjhrza2krhyeuj8wphyrxhzt5l3hczqqmfdsg2du0ksplt2py",
-            lovelaceToSend: 3000000,
             assetNameHex: "4c494645",
             assetPolicyIdHex: "ae02017105527c6c0c9840397a39cc5ca39fabe5b9998ba70fda5f2f",
             assetAmountToSend: 5,
@@ -120,6 +113,9 @@ export default class App extends React.Component
             // vote
             voteGovActionID: "gov_action...hd74s",
             voteChoice: undefined,
+
+            supportedExtensions: [],
+            enabledExtensions: [],
         }
 
         /**
@@ -281,6 +277,28 @@ export default class App extends React.Component
         const walletName = window?.cardano?.[walletKey].name;
         this.setState({walletName})
         return walletName;
+    }
+
+    getSupportedExtensions = () => {
+        const walletKey = this.state.whichWalletSelected;
+        let supportedExtensions = [];
+        try {
+            supportedExtensions = window?.cardano?.[walletKey]?.supportedExtensions;
+        } catch (err) {
+            console.log("Error getting supported extensions")
+            console.log(err)
+        }
+        this.setState({supportedExtensions})
+    }
+
+    getEnabledExtensions = async () => {
+        try {
+            const enabledExtensions = await this.API.getExtensions();
+            this.setState({enabledExtensions})
+
+        } catch (err) {
+            console.log(err)
+        }
     }
 
     /**
@@ -453,6 +471,7 @@ export default class App extends React.Component
             if (walletFound && this.state.selectedCIP95) {
                 await this.getAPIVersion();
                 await this.getWalletName();
+                this.getSupportedExtensions();
                 const walletEnabled = await this.enableCIP95Wallet();
                 const hasCIP95Methods = await this.checkIfCIP95MethodsAvailable();
 
@@ -466,6 +485,7 @@ export default class App extends React.Component
                     await this.getPubDRepKey();
                     await this.getRegisteredPubStakeKeys();
                     await this.getUnregisteredPubStakeKeys();
+                    await this.getEnabledExtensions();
                 } else {
                     await this.setState({
                         Utxos: null,
@@ -474,11 +494,6 @@ export default class App extends React.Component
                         changeAddress: null,
                         rewardAddress: null,
                         usedAddress: null,
-
-                        txBody: null,
-                        txBodyCborHex_unsigned: "",
-                        txBodyCborHex_signed: "",
-                        submittedTxHash: "",
 
                         dRepKey: "",
                         dRepID: "",
@@ -496,11 +511,14 @@ export default class App extends React.Component
                         votingBuilder: "",
                         govActionBuilder: "",
                         voteDelegationTarget: "",
+                        supportedExtensions: [],
+                        enabledExtensions: [],
                     });
                 }
             } else if (walletFound) {
                     await this.getAPIVersion();
                     await this.getWalletName();
+                    this.getSupportedExtensions();
                     const walletEnabled = await this.enableWallet();
                     if (walletEnabled) {
                         await this.getNetworkId();
@@ -509,6 +527,7 @@ export default class App extends React.Component
                         await this.getChangeAddress();
                         await this.getRewardAddresses();
                         await this.getUsedAddresses();
+                        await this.getEnabledExtensions();
                     } else {
                         await this.setState({
                             Utxos: null,
@@ -517,11 +536,6 @@ export default class App extends React.Component
                             changeAddress: null,
                             rewardAddress: null,
                             usedAddress: null,
-    
-                            txBody: null,
-                            txBodyCborHex_unsigned: "",
-                            txBodyCborHex_signed: "",
-                            submittedTxHash: "",
     
                             dRepKey: "",
                             dRepID: "",
@@ -539,6 +553,8 @@ export default class App extends React.Component
                             cip95MetadataURL: "",
                             cip95MetadataHash: "",
                             voteDelegationTarget: "",
+                            supportedExtensions: [],
+                            enabledExtensions: [],
                         });
                     }
             } else {
@@ -551,11 +567,6 @@ export default class App extends React.Component
                     changeAddress: null,
                     rewardAddress: null,
                     usedAddress: null,
-
-                    txBody: null,
-                    txBodyCborHex_unsigned: "",
-                    txBodyCborHex_signed: "",
-                    submittedTxHash: "",
 
                     dRepKey: "",
                     dRepID: "",
@@ -573,6 +584,8 @@ export default class App extends React.Component
                     votingBuilder: "",
                     govActionBuilder: "",
                     voteDelegationTarget: "",
+                    supportedExtensions: "",
+                    enabledExtensions: "",
                 });
             }
         } catch (err) {
@@ -1074,19 +1087,25 @@ export default class App extends React.Component
                 </div>
 
                 <button style={{padding: "20px"}} onClick={this.refreshData}>Refresh</button> 
-
-                <p style={{paddingTop: "20px"}}><span style={{fontWeight: "bold"}}>Wallet Found: </span>{`${this.state.walletFound}`}</p>
+                <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
+                <h3>CIP-30 Initial API</h3>
+                <p><span style={{fontWeight: "bold"}}>Wallet Found: </span>{`${this.state.walletFound}`}</p>
                 <p><span style={{fontWeight: "bold"}}>Wallet Connected: </span>{`${this.state.walletIsEnabled}`}</p>
                 <p><span style={{fontWeight: "bold"}}>Wallet API version: </span>{this.state.walletAPIVersion}</p>
                 <p><span style={{fontWeight: "bold"}}>Wallet name: </span>{this.state.walletName}</p>
-
+                <p><span style={{ fontWeight: "bold" }}>.getSupportedExtensions():</span><ul>{this.state.supportedExtensions ? (this.state.supportedExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No supported extensions found.</li>)}</ul></p>
+                
+                <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
+                <h3>CIP-30 Full API</h3>
                 <p><span style={{fontWeight: "bold"}}>Network Id (0 = testnet; 1 = mainnet): </span>{this.state.networkId}</p>
-                <p style={{paddingTop: "20px"}}><span style={{fontWeight: "bold"}}>UTXOs: </span>{this.state.Utxos?.map(x => <li style={{fontSize: "10px"}} key={`${x.str}${x.multiAssetStr}`}>{`${x.str}${x.multiAssetStr}`}</li>)}</p>
-                <p style={{paddingTop: "20px"}}><span style={{fontWeight: "bold"}}>Balance: </span>{this.state.balance}</p>
+                <p><span style={{fontWeight: "bold"}}>UTXOs: </span>{this.state.Utxos?.map(x => <li style={{fontSize: "10px"}} key={`${x.str}${x.multiAssetStr}`}>{`${x.str}${x.multiAssetStr}`}</li>)}</p>
+                <p style={{paddingTop: "10px"}}><span style={{fontWeight: "bold"}}>Balance: </span>{this.state.balance}</p>
                 <p><span style={{fontWeight: "bold"}}>Change Address: </span>{this.state.changeAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>api.getRewardsAddress(): </span>{this.state.rewardAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>Used Address: </span>{this.state.usedAddress}</p>
-                <hr style={{marginTop: "40px", marginBottom: "40px"}}/>
+                <p><span style={{ fontWeight: "bold" }}>.getExtensions():</span><ul>{this.state.enabledExtensions ? (this.state.enabledExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No extensions enabled.</li>)}</ul></p>
+
+                <hr style={{marginTop: "40px", marginBottom: "10px"}}/>
                 <h1>CIP-95 🤠</h1>
                 <p><span style={{fontWeight: "bold"}}> .getPubDRepKey(): </span>{this.state.dRepKey}</p>
                 <p><span style={{fontWeight: "lighter"}}>Hex DRep ID (Key digest): </span>{this.state.dRepID}</p>
