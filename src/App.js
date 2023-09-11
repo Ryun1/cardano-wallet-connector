@@ -24,9 +24,21 @@ import {
     CertificatesBuilder,
     VoteDelegation,
     DRep,
-    AnchorDataHash,
     Anchor,
     DrepRegistration,
+    DrepUpdate,
+    DrepDeregistration,
+    VotingBuilder,
+    Voter,
+    GovernanceActionId,
+    TransactionHash,
+    VotingProcedure,
+    VotingProposalBuilder,
+    VotingProposal,
+    NewConstitutionProposal,
+    Constitution,
+    AnchorDataHash,
+    URL,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 let Buffer = require('buffer/').Buffer
@@ -57,13 +69,6 @@ export default class App extends React.Component
             rewardAddress: undefined,
             usedAddress: undefined,
 
-            txBody: undefined,
-            txBodyCborHex_unsigned: "",
-            txBodyCborHex_signed: "",
-            submittedTxHash: "",
-
-            addressBech32SendADA: "addr_test1qrptpa3yfhva8ndvmnfyjl3a49jhhc8apwlz9u8cvm6nmx0lcqjhrza2krhyeuj8wphyrxhzt5l3hczqqmfdsg2du0ksplt2py",
-            lovelaceToSend: 3000000,
             assetNameHex: "4c494645",
             assetPolicyIdHex: "ae02017105527c6c0c9840397a39cc5ca39fabe5b9998ba70fda5f2f",
             assetAmountToSend: 5,
@@ -93,10 +98,11 @@ export default class App extends React.Component
             cip95ResultWitness: "",
             cip95MetadataURL: undefined,
             cip95MetadataHash: undefined,
-            cip95MetadatumLabel: BigNum.from_str("3921"),
             
             // Conway Alpha
-            cip95CertBuilder: "",
+            certBuilder: "",
+            votingBuilder: "",
+            govActionBuilder: "",
 
             // vote delegation
             voteDelegationTarget: "",
@@ -108,11 +114,8 @@ export default class App extends React.Component
             voteGovActionID: "gov_action...hd74s",
             voteChoice: undefined,
 
-            // governance action
-            govActionDeposit: 100,
-            govActionHash: "b4e4184bfedf920fec53cdc327de4da661ae427784c0ccca9e3c2f50",
-            govActionType: undefined,
-
+            supportedExtensions: [],
+            enabledExtensions: [],
         }
 
         /**
@@ -276,6 +279,28 @@ export default class App extends React.Component
         return walletName;
     }
 
+    getSupportedExtensions = () => {
+        const walletKey = this.state.whichWalletSelected;
+        let supportedExtensions = [];
+        try {
+            supportedExtensions = window?.cardano?.[walletKey]?.supportedExtensions;
+        } catch (err) {
+            console.log("Error getting supported extensions")
+            console.log(err)
+        }
+        this.setState({supportedExtensions})
+    }
+
+    getEnabledExtensions = async () => {
+        try {
+            const enabledExtensions = await this.API.getExtensions();
+            this.setState({enabledExtensions})
+
+        } catch (err) {
+            console.log(err)
+        }
+    }
+
     /**
      * Gets the Network ID to which the wallet is connected
      * 0 = testnet
@@ -362,42 +387,6 @@ export default class App extends React.Component
     }
 
     /**
-     * The collateral is need for working with Plutus Scripts
-     * Essentially you need to provide collateral to pay for fees if the
-     * script execution fails after the script has been validated...
-     * this should be an uncommon occurrence and would suggest the smart contract
-     * would have been incorrectly written.
-     * The amount of collateral to use is set in the wallet
-     * @returns {Promise<void>}
-     */
-    getCollateral = async () => {
-
-        let CollatUtxos = [];
-
-        try {
-
-            let collateral = [];
-
-            const wallet = this.state.whichWalletSelected;
-            if (wallet === "nami") {
-                collateral = await this.API.experimental.getCollateral();
-            } else {
-                collateral = await this.API.getCollateral();
-            }
-
-            for (const x of collateral) {
-                const utxo = TransactionUnspentOutput.from_bytes(Buffer.from(x, "hex"));
-                CollatUtxos.push(utxo)
-                // console.log(utxo)
-            }
-            this.setState({CollatUtxos})
-        } catch (err) {
-            console.log(err)
-        }
-
-    }
-
-    /**
      * Gets the current balance of in Lovelace in the user's wallet
      * This doesnt resturn the amounts of all other Tokens
      * For other tokens you need to look into the full UTXO list
@@ -458,7 +447,6 @@ export default class App extends React.Component
             const raw = await this.API.getUsedAddresses();
             const rawFirst = raw[0];
             const usedAddress = Address.from_bytes(Buffer.from(rawFirst, "hex")).to_bech32()
-            // console.log(rewardAddress)
             this.setState({usedAddress})
 
         } catch (err) {
@@ -468,7 +456,7 @@ export default class App extends React.Component
 
     checkIfCIP95MethodsAvailable = async () => {
         const hasCIP95Methods =( this.API.hasOwnProperty('getPubDRepKey'));
-        console.log(`Has CIP95 .getPubDRepKey() and .getActivePubStakeKeys: ${hasCIP95Methods}`)
+        console.log(`Has CIP95 .getPubDRepKey(): ${hasCIP95Methods}`)
         return hasCIP95Methods;
     }
     /**
@@ -483,6 +471,7 @@ export default class App extends React.Component
             if (walletFound && this.state.selectedCIP95) {
                 await this.getAPIVersion();
                 await this.getWalletName();
+                this.getSupportedExtensions();
                 const walletEnabled = await this.enableCIP95Wallet();
                 const hasCIP95Methods = await this.checkIfCIP95MethodsAvailable();
 
@@ -496,6 +485,7 @@ export default class App extends React.Component
                     await this.getPubDRepKey();
                     await this.getRegisteredPubStakeKeys();
                     await this.getUnregisteredPubStakeKeys();
+                    await this.getEnabledExtensions();
                 } else {
                     await this.setState({
                         Utxos: null,
@@ -504,11 +494,6 @@ export default class App extends React.Component
                         changeAddress: null,
                         rewardAddress: null,
                         usedAddress: null,
-
-                        txBody: null,
-                        txBodyCborHex_unsigned: "",
-                        txBodyCborHex_signed: "",
-                        submittedTxHash: "",
 
                         dRepKey: "",
                         dRepID: "",
@@ -520,22 +505,29 @@ export default class App extends React.Component
                         cip95ResultTx: "",
                         cip95ResultHash: "",
                         cip95ResultWitness: "",
-                        cip95CertBuilder: "",
+                        cip95MetadataURL: "",
+                        cip95MetadataHash: "",
+                        certBuilder: "",
+                        votingBuilder: "",
+                        govActionBuilder: "",
                         voteDelegationTarget: "",
+                        supportedExtensions: [],
+                        enabledExtensions: [],
                     });
                 }
             } else if (walletFound) {
                     await this.getAPIVersion();
                     await this.getWalletName();
+                    this.getSupportedExtensions();
                     const walletEnabled = await this.enableWallet();
                     if (walletEnabled) {
                         await this.getNetworkId();
                         await this.getUtxos();
-                        // await this.getCollateral();
                         await this.getBalance();
                         await this.getChangeAddress();
                         await this.getRewardAddresses();
                         await this.getUsedAddresses();
+                        await this.getEnabledExtensions();
                     } else {
                         await this.setState({
                             Utxos: null,
@@ -544,11 +536,6 @@ export default class App extends React.Component
                             changeAddress: null,
                             rewardAddress: null,
                             usedAddress: null,
-    
-                            txBody: null,
-                            txBodyCborHex_unsigned: "",
-                            txBodyCborHex_signed: "",
-                            submittedTxHash: "",
     
                             dRepKey: "",
                             dRepID: "",
@@ -560,8 +547,14 @@ export default class App extends React.Component
                             cip95ResultTx: "",
                             cip95ResultHash: "",
                             cip95ResultWitness: "",
-                            cip95CertBuilder: "",
+                            certBuilder: "",
+                            votingBuilder: "",
+                            govActionBuilder: "",
+                            cip95MetadataURL: "",
+                            cip95MetadataHash: "",
                             voteDelegationTarget: "",
+                            supportedExtensions: [],
+                            enabledExtensions: [],
                         });
                     }
             } else {
@@ -575,11 +568,6 @@ export default class App extends React.Component
                     rewardAddress: null,
                     usedAddress: null,
 
-                    txBody: null,
-                    txBodyCborHex_unsigned: "",
-                    txBodyCborHex_signed: "",
-                    submittedTxHash: "",
-
                     dRepKey: "",
                     dRepID: "",
                     dRepIDBech32: "",
@@ -590,8 +578,14 @@ export default class App extends React.Component
                     cip95ResultTx: "",
                     cip95ResultHash: "",
                     cip95ResultWitness: "",
-                    cip95CertBuilder: "",
+                    cip95MetadataURL: "",
+                    cip95MetadataHash: "",
+                    certBuilder: "",
+                    votingBuilder: "",
+                    govActionBuilder: "",
                     voteDelegationTarget: "",
+                    supportedExtensions: "",
+                    enabledExtensions: "",
                 });
             }
         } catch (err) {
@@ -652,7 +646,7 @@ export default class App extends React.Component
 
             // into bech32
             const words = bech32.toWords(Buffer.from(dRepID.to_bytes()));
-            const dRepIDBech32 = bech32.encode('drep_id', words);
+            const dRepIDBech32 = bech32.encode('drep', words);
             // console.log("DRep ID Bech: ", dRepIDBech32);
             this.setState({dRepIDBech32});
 
@@ -758,15 +752,12 @@ export default class App extends React.Component
         this.setState({selectedCIP95});
     }
 
-    buildSubmitConwayCertTx = async () => {
-    
+    buildSubmitConwayTx = async () => {
         // Initialize builder with protocol parameters
         const txBuilder = await this.initTransactionBuilder();
-
         // Set output and change addresses to those of our wallet
         const shelleyOutputAddress = Address.from_bech32(this.state.usedAddress);
         const shelleyChangeAddress = Address.from_bech32(this.state.changeAddress);
-        
         // Add output of 1 ADA to the address of our wallet
         txBuilder.add_output(
             TransactionOutput.new(
@@ -774,20 +765,28 @@ export default class App extends React.Component
                 Value.new(BigNum.from_str("1000000"))
             ),
         );
-
         // Find the available UTXOs in the wallet and use them as Inputs for the transaction
         const txUnspentOutputs = await this.getTxUnspentOutputs();
         txBuilder.add_inputs_from(txUnspentOutputs, 1)
-
         // Set change address, incase too much ADA provided for fee
         txBuilder.add_change_if_needed(shelleyChangeAddress)
-        
-        // Set the certificate to the current certbuilder
-        txBuilder.set_certs_builder(this.state.cip95CertBuilder);
+
+
+        if(!(this.state.certBuilder === "")){
+            // Set the certificate to the current certbuilder
+            txBuilder.set_certs_builder(this.state.certBuilder);
+        }
+
+        if(!(this.state.votingBuilder === "")){
+            txBuilder.set_voting_builder(this.state.votingBuilder);
+        }
+
+        if(!(this.state.govActionBuilder === "")){
+            txBuilder.set_voting_proposal_builder(this.state.govActionBuilder);
+        }
 
         // Build transaction body
         const txBody = txBuilder.build();
-
         // Make a full transaction, passing in empty witness set
         const transactionWitnessSet = TransactionWitnessSet.new();
         const tx = Transaction.new(
@@ -795,26 +794,23 @@ export default class App extends React.Component
             TransactionWitnessSet.from_bytes(transactionWitnessSet.to_bytes()),
         );
 
-        console.log("UnSigned Tx: ", tx.to_json());
+        //console.log("UnSigned Tx: ", tx.to_json());
 
         // Ask wallet to to provide signature (witnesses) for the transaction
         let txVkeyWitnesses;
-        
         txVkeyWitnesses = await this.API.signTx(Buffer.from(tx.to_bytes(), "utf8").toString("hex"), true);
 
-        console.log("Wallet signed Tx")
 
         // Create witness set object using the witnesses provided by the wallet
         txVkeyWitnesses = TransactionWitnessSet.from_bytes(Buffer.from(txVkeyWitnesses, "hex"));
         transactionWitnessSet.set_vkeys(txVkeyWitnesses.vkeys());
-        
         // Build transaction with witnesses
         const signedTx = Transaction.new(
             tx.body(),
             transactionWitnessSet,
         );
 
-        console.log("Signed Tx: ", signedTx.to_json());
+        //console.log("Signed Tx: ", signedTx.to_json());
         
         // Submit built signed transaction to chain, via wallet's submit transaction endpoint
         const result = await this.API.submitTx(Buffer.from(signedTx.to_bytes(), "utf8").toString("hex"));
@@ -826,46 +822,28 @@ export default class App extends React.Component
         this.setState({cip95ResultTx});
         this.setState({cip95ResultHash});
         this.setState({cip95ResultWitness});
-    }
-
-    // conway alpha
-    buildDRepRegCert = async (anchorURL, anchorHash) => {
-
-        // Build DRep Registration Certificate
-        const certBuilder = CertificatesBuilder.new();
-
-        // Get wallet's DRep key
-        const DRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
-        const dRepCred = Credential.from_keyhash(DRepKeyHash);
-
-        // Make an example metadata anchor, using my github example
-        const dataHash = AnchorDataHash.from_hex("9bba8233cdd086f0325daba465d568a88970d42536f9e71e92a80d5922ded885");
-        // const url = CSL.URL.new("https://raw.githubusercontent.com/Ryun1/gov-metadata/main/governace-action/metadata.jsonld");
-        const url = URL.new("example.com");
-        const anchor = Anchor.new(url, dataHash);
-
-        // Create cert object using one Ada as the deposit
-        const dRepRegCert = DrepRegistration.new_with_anchor(
-            dRepCred,
-            BigNum.from_str("1000000"), // deposit
-            anchor
-        );
-
-        // add cert to tbuilder
-        certBuilder.add(Certificate.new_drep_registration(dRepRegCert));
         
-        this.setState({cip95CertBuilder : certBuilder});
+        // Reset some state
+        this.setState({cip95MetadataURL : ""});
+        this.setState({cip95MetadataHash : ""});
+        this.setState({certBuilder : ""});
+        this.setState({votingBuilder : ""});
+        this.setState({govActionBuilder : ""});
     }
 
     // conway alpha
     buildVoteDelegationCert = async (target) => {
-    
         // Build Vote Delegation Certificate
         const certBuilder = CertificatesBuilder.new();
-        
-        const stakeKeyHash = Ed25519KeyHash.from_hex(this.state.stakeKeyHashHex);
+        // Use stake key hash from wallet
+        let stakeKeyHash;
+        if (this.state.regStakeKeyHashHex === "") {
+            console.log("Warning: Using unregistered stake key for vote delegation");
+            stakeKeyHash = Ed25519KeyHash.from_hex(this.state.unregStakeKeyHashHex);
+        }else{
+            stakeKeyHash = Ed25519KeyHash.from_hex(this.state.regStakeKeyHashHex);
+        };
         const stakeCred = Credential.from_keyhash(stakeKeyHash);
-        
         // Create correct DRep
         let targetDRep;
         if (target.dRep === 'abstain') {
@@ -877,23 +855,147 @@ export default class App extends React.Component
         }else{
             targetDRep = DRep.new_key_hash(Ed25519KeyHash.from_bech32(target.dRep));
         };
-
+        // Create cert object
         const voteDelegationCert = VoteDelegation.new(
             stakeCred,
             targetDRep,
         );
-    
         // add cert to tbuilder
         certBuilder.add(Certificate.new_vote_delegation(voteDelegationCert));
-        
-        this.setState({cip95CertBuilder : certBuilder});
+        this.setState({certBuilder : certBuilder});
+    }
+
+    // conway alpha
+    buildDRepRegCert = async () => {
+
+        // Build DRep Registration Certificate
+        const certBuilder = CertificatesBuilder.new();
+
+        // Get wallet's DRep key
+        const dRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
+        const dRepCred = Credential.from_keyhash(dRepKeyHash);
+
+        let dRepRegCert;
+        // If there is an anchor
+        if (!(this.state.cip95MetadataURL === "")) {
+            const anchor = Anchor.new(this.state.cip95MetadataURL, this.state.cip95MetadataHash);
+            // Create cert object using one Ada as the deposit
+            dRepRegCert = DrepRegistration.new_with_anchor(
+                dRepCred,
+                BigNum.from_str("1000000"), // deposit
+                anchor
+            );
+        }else{
+            console.log("DRep Registration - not using anchor")
+            dRepRegCert = DrepRegistration.new(
+                dRepCred,
+                BigNum.from_str("1000000"),
+            );
+        };
+        // add cert to tbuilder
+        certBuilder.add(Certificate.new_drep_registration(dRepRegCert));
+        this.setState({certBuilder : certBuilder});
+    }
+
+    // conway alpha
+    buildDRepUpdateCert = async () => {
+
+        // Build DRep Registration Certificate
+        const certBuilder = CertificatesBuilder.new();
+
+        // Get wallet's DRep key
+        const dRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
+        const dRepCred = Credential.from_keyhash(dRepKeyHash);
+
+        let dRepUpdateCert;
+        // If there is an anchor
+        if (!(this.state.cip95MetadataURL === "")) {
+            const anchor = Anchor.new(this.state.cip95MetadataURL, this.state.cip95MetadataHash);
+            // Create cert object using one Ada as the deposit
+            dRepUpdateCert = DrepUpdate.new_with_anchor(
+                dRepCred,
+                BigNum.from_str("1000000"), // deposit
+                anchor
+            );
+        }else{
+            dRepUpdateCert = DrepUpdate.new(
+                dRepCred,
+                BigNum.from_str("1000000"),
+            );
+        };
+        // add cert to tbuilder
+        certBuilder.add(Certificate.new_drep_update(dRepUpdateCert));
+        this.setState({certBuilder : certBuilder});
+    }
+
+    // conway alpha
+    buildDRepRetirementCert = async () => {
+
+        // Build DRep Registration Certificate
+        const certBuilder = CertificatesBuilder.new();
+
+        // Get wallet's DRep key
+        const dRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
+        const dRepCred = Credential.from_keyhash(dRepKeyHash);
+
+        const dRepRetirementCert = DrepDeregistration.new(
+            dRepCred,
+            BigNum.from_str("1000000"),
+        );
+        // add cert to tbuilder
+        certBuilder.add(Certificate.new_drep_deregistration(dRepRetirementCert));
+        this.setState({certBuilder : certBuilder});
+    }
+
+    buildVote = async () => {
+        // Get wallet's DRep key
+        const dRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
+        // Vote things
+        const voter = Voter.new_drep(Credential.from_keyhash(dRepKeyHash))
+        const govActionId = GovernanceActionId.new(
+            // placeholder
+            TransactionHash.from_hex("fa8633456ad83503e6d62f330c5b34b3857dec2244f0060f641c52bd082629fc"),
+            0
+        );
+
+        let votingChoice;
+        if (this.state.voteChoice === "Yes") {
+            votingChoice = 1
+        } else if (this.state.voteChoice === "No") {
+            votingChoice = 0
+        }else{
+            votingChoice = 2
+        }
+
+        let votingProcedure;
+        if (!(this.state.cip95MetadataURL === "")) {
+            const anchor = Anchor.new(this.state.cip95MetadataURL, this.state.cip95MetadataHash);
+            // Create cert object using one Ada as the deposit
+            votingProcedure = VotingProcedure.new_with_anchor(votingChoice, anchor);
+        }else{
+            votingProcedure = VotingProcedure.new(votingChoice);
+        };
+
+        const votingBuilder = VotingBuilder.new();
+        votingBuilder.add(voter, govActionId, votingProcedure);
+
+        this.setState({votingBuilder});
+    }
+
+    buildNewConstGovAct = async () => {
+        const dataHash = AnchorDataHash.from_hex("fa8633456ad83503e6d62f330c5b34b3857dec2244f0060f641c52bd082629fc");
+        const url = URL.new(this.state.cip95MetadataURL);
+        const anchor = Anchor.new(url, dataHash);
+        const constChangeGovAct = NewConstitutionProposal.new(Constitution.new(anchor));
+        const govAct = VotingProposal.new_new_constitution_proposal(constChangeGovAct);
+        const govActionBuilder = VotingProposalBuilder.new();
+        govActionBuilder.add(govAct);
+        this.setState({govActionBuilder});
     }
 
     buildSubmitTestTx = async () => {
-
         // Initialize builder with protocol parameters
         const txBuilder = await this.initTransactionBuilder();
-
         // Set output and change addresses to those of our wallet
         const shelleyOutputAddress = Address.from_bech32(this.state.usedAddress);
         const shelleyChangeAddress = Address.from_bech32(this.state.changeAddress);
@@ -936,6 +1038,7 @@ export default class App extends React.Component
             transactionWitnessSet,
         );
         
+        console.log("SignedTx: ", Buffer.from(signedTx.to_bytes(), "utf8").toString("hex"))
         // Submit built signed transaction to chain, via wallet's submit transaction endpoint
         const result = await this.API.submitTx(Buffer.from(signedTx.to_bytes(), "utf8").toString("hex"));
         console.log("Built and submitted test transaction: ", result)
@@ -984,19 +1087,25 @@ export default class App extends React.Component
                 </div>
 
                 <button style={{padding: "20px"}} onClick={this.refreshData}>Refresh</button> 
-
-                <p style={{paddingTop: "20px"}}><span style={{fontWeight: "bold"}}>Wallet Found: </span>{`${this.state.walletFound}`}</p>
+                <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
+                <h3>CIP-30 Initial API</h3>
+                <p><span style={{fontWeight: "bold"}}>Wallet Found: </span>{`${this.state.walletFound}`}</p>
                 <p><span style={{fontWeight: "bold"}}>Wallet Connected: </span>{`${this.state.walletIsEnabled}`}</p>
                 <p><span style={{fontWeight: "bold"}}>Wallet API version: </span>{this.state.walletAPIVersion}</p>
                 <p><span style={{fontWeight: "bold"}}>Wallet name: </span>{this.state.walletName}</p>
-
+                <p><span style={{ fontWeight: "bold" }}>.getSupportedExtensions():</span><ul>{this.state.supportedExtensions ? (this.state.supportedExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No supported extensions found.</li>)}</ul></p>
+                
+                <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
+                <h3>CIP-30 Full API</h3>
                 <p><span style={{fontWeight: "bold"}}>Network Id (0 = testnet; 1 = mainnet): </span>{this.state.networkId}</p>
-                <p style={{paddingTop: "20px"}}><span style={{fontWeight: "bold"}}>UTXOs: </span>{this.state.Utxos?.map(x => <li style={{fontSize: "10px"}} key={`${x.str}${x.multiAssetStr}`}>{`${x.str}${x.multiAssetStr}`}</li>)}</p>
-                <p style={{paddingTop: "20px"}}><span style={{fontWeight: "bold"}}>Balance: </span>{this.state.balance}</p>
+                <p><span style={{fontWeight: "bold"}}>UTXOs: </span>{this.state.Utxos?.map(x => <li style={{fontSize: "10px"}} key={`${x.str}${x.multiAssetStr}`}>{`${x.str}${x.multiAssetStr}`}</li>)}</p>
+                <p style={{paddingTop: "10px"}}><span style={{fontWeight: "bold"}}>Balance: </span>{this.state.balance}</p>
                 <p><span style={{fontWeight: "bold"}}>Change Address: </span>{this.state.changeAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>api.getRewardsAddress(): </span>{this.state.rewardAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>Used Address: </span>{this.state.usedAddress}</p>
-                <hr style={{marginTop: "40px", marginBottom: "40px"}}/>
+                <p><span style={{ fontWeight: "bold" }}>.getExtensions():</span><ul>{this.state.enabledExtensions ? (this.state.enabledExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No extensions enabled.</li>)}</ul></p>
+
+                <hr style={{marginTop: "40px", marginBottom: "10px"}}/>
                 <h1>CIP-95 🤠</h1>
                 <p><span style={{fontWeight: "bold"}}> .getPubDRepKey(): </span>{this.state.dRepKey}</p>
                 <p><span style={{fontWeight: "lighter"}}>Hex DRep ID (Key digest): </span>{this.state.dRepID}</p>
@@ -1008,9 +1117,9 @@ export default class App extends React.Component
                 <p><span style={{fontWeight: "bold"}}>.getUnregisteredPubStakeKeys(): </span>{this.state.unregStakeKey}</p>
                 <p><span style={{fontWeight: "lighter"}}> Registered Stake Key Hash (hex): </span>{this.state.unregStakeKeyHashHex}</p>
 
-                <p><span style={{fontWeight: "bold"}}>Build Transaction and then .signTx(): </span></p>
+                <p><span style={{fontWeight: "bold"}}>Use CIP-95 signTx(): </span></p>
                 <Tabs id="cip95" vertical={true} onChange={this.handle95TabId} selectedTab95Id={this.state.selected95TabId}>
-                    <Tab id="1" title="Submit Vote Delegation 🦸‍♀️" panel={
+                    <Tab id="1" title="🦸‍♀️ Vote Delegation" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1022,14 +1131,13 @@ export default class App extends React.Component
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({voteDelegationTarget: event.target.value})}
                                     value={this.state.voteDelegationTarget}
-
                                 />
                             </FormGroup>
 
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildVoteDelegationCert({dRep: this.state.voteDelegationTarget}))}>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildVoteDelegationCert({dRep: this.state.voteDelegationTarget}))}>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
-                    <Tab id="2" title="Submit DRep Registration 👷‍♂️" panel={
+                    <Tab id="2" title="👷‍♂️ DRep Registration" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1040,7 +1148,6 @@ export default class App extends React.Component
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                    defaultValue="https://raw.githubusercontent.com/Ryun1/gov-metadata/main/governace-action/metadata.jsonld"
                                 />
                             </FormGroup>
 
@@ -1052,40 +1159,22 @@ export default class App extends React.Component
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataHash}
-
                                 />
                             </FormGroup>
 
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayCertTx(this.buildDRepRegCert(this.state.cip95MetadataURL, this.state.cip95MetadataHash))}>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildDRepRegCert())}>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
-                    <Tab id="3" title="Submit DRep Retirement 👴" panel={
+                    <Tab id="3" title="💫 DRep Update" panel={
                         <div style={{marginLeft: "20px"}}>
-
-                            <FormGroup
+                                                        <FormGroup
                                 helperText=""
-                                label="Retirement Epoch"
-                            >
-                                <InputGroup
-                                    disabled={false}
-                                    leftIcon="id-number"
-                                    onChange={(event) => this.setState({dRepRetirementEpoch: event.target.value})}
-                                    defaultValue={this.state.dRepRetirementEpoch}
-
-                                />
-                            </FormGroup>
-
-                            <FormGroup
-                                helperText="https://my-metadata-url.json"
                                 label="Optional: Metadata URL"
                             >
                                 <InputGroup
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataURL}
-
                                 />
                             </FormGroup>
 
@@ -1097,15 +1186,20 @@ export default class App extends React.Component
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataHash}
-
                                 />
                             </FormGroup>
 
-                    <button style={{padding: "10px"}} onClick={ () => this.buildSubmitMetadataTx({ DRep_id : this.state.dRepIDBech32, retirement_epoch : this.state.dRepRetirementEpoch, metadata_url : this.state.cip95MetadataURL, metadata_hash : this.state.cip95MetadataHash}) }>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildDRepUpdateCert())}>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
-                    <Tab id="4" title="Submit Vote 🗳" panel={
+
+                    <Tab id="4" title="👴 DRep Retirement" panel={
+                        <div style={{marginLeft: "20px"}}>
+
+                    <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildDRepRetirementCert())}>Build, .signTx() and .submitTx()</button>
+                        </div>
+                    } />
+                    <Tab id="5" title="🗳 Vote" panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
@@ -1116,7 +1210,7 @@ export default class App extends React.Component
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({voteGovActionID: event.target.value})}
-                                    defaultValue={this.state.voteGovActionID}
+                                    defaultValue={'fa8633456ad83503e6d62f330c5b34b3857dec2244f0060f641c52bd082629fc'}
 
                                 />
                             </FormGroup>
@@ -1129,13 +1223,10 @@ export default class App extends React.Component
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({voteChoice: event.target.value})}
-                                    defaultValue={this.state.voteChoice}
-
                                 />
                             </FormGroup>
 
                             <FormGroup
-                                helperText="https://my-metadata-url.json"
                                 label="Optional: Metadata URL"
                             >
                                 <InputGroup
@@ -1143,7 +1234,6 @@ export default class App extends React.Component
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
                                     defaultValue={this.state.cip95MetadataURL}
-
                                 />
                             </FormGroup>
 
@@ -1155,75 +1245,46 @@ export default class App extends React.Component
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataHash}
-
                                 />
                             </FormGroup>
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildVote())}>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
-                    <Tab id="5" title="Submit Governance Action 💡" panel={
+                    <Tab id="6" title="💡 Governance Action: New Constitution " panel={
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
                                 helperText=""
-                                label="Gov Action Type"
-                            >
-                                <InputGroup
-                                    disabled={false}
-                                    leftIcon="id-number"
-                                    onChange={(event) => this.setState({govActionType: event.target.value})}
-                                    defaultValue={this.state.govActionType}
-
-                                />
-                            </FormGroup>
-
-                            <FormGroup
-                                helperText=""
-                                label="Last Gov Action Hash"
-                            >
-                                <InputGroup
-                                    disabled={false}
-                                    leftIcon="id-number"
-                                    onChange={(event) => this.setState({govActionHash: event.target.value})}
-                                    defaultValue={this.state.govActionHash}
-
-                                />
-                            </FormGroup>
-
-                            <FormGroup
-                                helperText="https://my-metadata-url.json"
-                                label="Optional: Metadata URL"
+                                label="Constitution URL"
                             >
                                 <InputGroup
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataURL}
+                                    defaultValue={'https://my-constitution-url.com'}
 
                                 />
                             </FormGroup>
 
                             <FormGroup
                                 helperText=""
-                                label="Optional: Metadata Hash"
+                                label="Constituion Hash"
                             >
                                 <InputGroup
                                     disabled={false}
                                     leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    defaultValue={this.state.cip95MetadataHash}
-
+                                    defaultValue={'fa8633456ad83503e6d62f330c5b34b3857dec2244f0060f641c52bd082629fc'}
                                 />
                             </FormGroup>
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildNewConstGovAct()) }>Build, .signTx() and .submitTx()</button>
 
                         </div>
                     } />
-                    <Tab id="6" title="Submit Test Transaction" panel={
+                    <Tab id="7" title=" 💯 Test Basic Transaction" panel={
                         <div style={{marginLeft: "20px"}}>
 
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>.submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitTestTx() }>Build, .signTx() and .submitTx()</button>
 
                         </div>
                     } />
