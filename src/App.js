@@ -88,6 +88,8 @@ export default class App extends React.Component
             dRepID: undefined,
             dRepIDBech32: undefined,
             // stake key items
+            regStakeKeys: [],
+            unregStakeKeys: [],
             regStakeKey: undefined,
             unregStakeKey: undefined,
             regStakeKeyHashHex: undefined,
@@ -498,6 +500,8 @@ export default class App extends React.Component
                         dRepKey: "",
                         dRepID: "",
                         dRepIDBech32: "",
+                        regStakeKeys: [],
+                        unregStakeKeys: [],
                         regStakeKey: "",
                         unregStakeKey: "",
                         regStakeKeyHashHex: "",
@@ -540,6 +544,8 @@ export default class App extends React.Component
                             dRepKey: "",
                             dRepID: "",
                             dRepIDBech32: "",
+                            regStakeKeys: [],
+                            unregStakeKeys: [],
                             regStakeKey: "",
                             unregStakeKey: "",
                             regStakeKeyHashHex: "",
@@ -571,6 +577,8 @@ export default class App extends React.Component
                     dRepKey: "",
                     dRepID: "",
                     dRepIDBech32: "",
+                    regStakeKeys: [],
+                    unregStakeKeys: [],
                     regStakeKey: "",
                     unregStakeKey: "",
                     regStakeKeyHashHex: "",
@@ -664,8 +672,13 @@ export default class App extends React.Component
             if (raw.length < 1){
                 console.log("No Registered Pub Stake Keys");
             } else {
+
+                // Set array
+                const regStakeKeys = raw;
+                this.setState({regStakeKeys})
+
                 // Just use the first key for now 
-                const regStakeKey = raw[0];
+                const regStakeKey = regStakeKeys[0];
                 console.log("Reg stake Key: ", regStakeKey);
                 this.setState({regStakeKey})
 
@@ -703,8 +716,11 @@ export default class App extends React.Component
                 console.log("No Unregistered Pub Stake Keys");
             } else {
 
-                const unregStakeKey = raw[0];
+                // Set array
+                const unregStakeKeys = raw;
+                this.setState({unregStakeKeys})
 
+                const unregStakeKey = unregStakeKeys[0];
                 console.log("Unreg stake Key: ", unregStakeKey);
                 this.setState({unregStakeKey})
 
@@ -1093,7 +1109,7 @@ export default class App extends React.Component
                 <p><span style={{fontWeight: "bold"}}>Wallet Connected: </span>{`${this.state.walletIsEnabled}`}</p>
                 <p><span style={{fontWeight: "bold"}}>Wallet API version: </span>{this.state.walletAPIVersion}</p>
                 <p><span style={{fontWeight: "bold"}}>Wallet name: </span>{this.state.walletName}</p>
-                <p><span style={{ fontWeight: "bold" }}>.getSupportedExtensions():</span><ul>{this.state.supportedExtensions ? (this.state.supportedExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No supported extensions found.</li>)}</ul></p>
+                <p><span style={{ fontWeight: "bold" }}>.getSupportedExtensions():</span><ul>{this.state.supportedExtensions ? (this.state.supportedExtensions.map((x) => (<li style={{ fontSize: "12px"}} key={x.cip}>{x.cip}</li>))) : (<li>No supported extensions found.</li>)}</ul></p>
                 
                 <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
                 <h3>CIP-30 Full API</h3>
@@ -1103,20 +1119,20 @@ export default class App extends React.Component
                 <p><span style={{fontWeight: "bold"}}>Change Address: </span>{this.state.changeAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>api.getRewardsAddress(): </span>{this.state.rewardAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>Used Address: </span>{this.state.usedAddress}</p>
-                <p><span style={{ fontWeight: "bold" }}>.getExtensions():</span><ul>{this.state.enabledExtensions ? (this.state.enabledExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No extensions enabled.</li>)}</ul></p>
+                <p><span style={{ fontWeight: "bold" }}>.getExtensions():</span><ul>{this.state.enabledExtensions && !(this.state.enabledExtensions == "")  ? (this.state.enabledExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No extensions enabled.</li>)}</ul></p>
 
                 <hr style={{marginTop: "40px", marginBottom: "10px"}}/>
                 <h1>CIP-95 🤠</h1>
+                {/* DRep Key Endpoints */}
                 <p><span style={{fontWeight: "bold"}}> .getPubDRepKey(): </span>{this.state.dRepKey}</p>
                 <p><span style={{fontWeight: "lighter"}}>Hex DRep ID (Key digest): </span>{this.state.dRepID}</p>
                 <p><span style={{fontWeight: "lighter"}}>Bech32 DRep ID (Key digest): </span>{this.state.dRepIDBech32}</p>
-
-                <p><span style={{fontWeight: "bold"}}>.getRegisteredPubStakeKeys(): </span>{this.state.regStakeKey}</p>
-                <p><span style={{fontWeight: "lighter"}}> Registered Stake Key Hash (hex): </span>{this.state.regStakeKeyHashHex}</p>
-
-                <p><span style={{fontWeight: "bold"}}>.getUnregisteredPubStakeKeys(): </span>{this.state.unregStakeKey}</p>
-                <p><span style={{fontWeight: "lighter"}}> Registered Stake Key Hash (hex): </span>{this.state.unregStakeKeyHashHex}</p>
-
+                {/* Stake Key Endpoints */}
+                <p><span style={{ fontWeight: "bold" }}>.getRegisteredPubStakeKeys():</span><ul>{this.state.regStakeKeys && this.state.regStakeKeys.length > 0  ? (this.state.regStakeKeys.map((item, index) => (<li style={{ fontSize: "12px" }} key={index}>{item}</li>))) : (<li>No registered public stake keys returned.</li>)}</ul></p>
+                <p><span style={{fontWeight: "lighter"}}> First registered Stake Key Hash (hex): </span>{this.state.regStakeKeyHashHex}</p>
+                <p><span style={{ fontWeight: "bold" }}>.getUnregisteredPubStakeKeys():</span><ul>{this.state.unregStakeKeys && this.state.unregStakeKeys.length > 0  ? (this.state.unregStakeKeys.map((item, index) => (<li style={{ fontSize: "12px" }} key={index}>{item}</li>))) : (<li>No unregistered public stake keys returned.</li>)}</ul></p>
+                <p><span style={{fontWeight: "lighter"}}> First registered Stake Key Hash (hex): </span>{this.state.unregStakeKeyHashHex}</p>
+                
                 <p><span style={{fontWeight: "bold"}}>Use CIP-95 signTx(): </span></p>
                 <Tabs id="cip95" vertical={true} onChange={this.handle95TabId} selectedTab95Id={this.state.selected95TabId}>
                     <Tab id="1" title="🦸‍♀️ Vote Delegation" panel={
