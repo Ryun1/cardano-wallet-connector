@@ -39,6 +39,7 @@ import {
     Constitution,
     AnchorDataHash,
     URL,
+    StakeRegistration,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 let Buffer = require('buffer/').Buffer
@@ -774,11 +775,11 @@ export default class App extends React.Component
         // Set output and change addresses to those of our wallet
         const shelleyOutputAddress = Address.from_bech32(this.state.usedAddress);
         const shelleyChangeAddress = Address.from_bech32(this.state.changeAddress);
-        // Add output of 1 ADA to the address of our wallet
+        // Add output of 3 ADA incase of stake reg then deposit can be payed
         txBuilder.add_output(
             TransactionOutput.new(
                 shelleyOutputAddress,
-                Value.new(BigNum.from_str("1000000"))
+                Value.new(BigNum.from_str("3000000"))
             ),
         );
         // Find the available UTXOs in the wallet and use them as Inputs for the transaction
@@ -826,7 +827,7 @@ export default class App extends React.Component
             transactionWitnessSet,
         );
 
-        //console.log("Signed Tx: ", signedTx.to_json());
+        console.log("Signed Tx: ", signedTx.to_json());
         
         // Submit built signed transaction to chain, via wallet's submit transaction endpoint
         const result = await this.API.submitTx(Buffer.from(signedTx.to_bytes(), "utf8").toString("hex"));
@@ -1067,6 +1068,16 @@ export default class App extends React.Component
         this.setState({cip95ResultWitness});
     }
 
+    buildStakeKeyRegCert = async () => {
+        // Build DRep Registration Certificate
+        const certBuilder = CertificatesBuilder.new();
+        const stakeKeyHash = Ed25519KeyHash.from_hex(this.state.unregStakeKeyHashHex);
+        const stakeKeyRegCert = StakeRegistration.new(Credential.from_keyhash(stakeKeyHash));
+        // add cert to tbuilder
+        certBuilder.add(Certificate.new_stake_registration(stakeKeyRegCert));
+        this.setState({certBuilder : certBuilder});
+    }
+
     async componentDidMount() {
         this.pollWallets();
         await this.refreshData();
@@ -1078,9 +1089,10 @@ export default class App extends React.Component
         return (
             <div style={{margin: "20px"}}>
 
-                <h1>✨Demos dApp✨</h1>
+                <h1>✨demos dApp✨</h1>
+                <h4>✨v1.5.0✨</h4>
 
-                <input type="checkbox" onChange={this.handleCIP95Select}/> CIP-95?
+                <input type="checkbox" onChange={this.handleCIP95Select}/> Enable CIP-95?
 
                 <div style={{paddingTop: "10px"}}>
                     <div style={{marginBottom: 15}}>Select wallet:</div>
@@ -1119,7 +1131,7 @@ export default class App extends React.Component
                 <p><span style={{fontWeight: "bold"}}>Change Address: </span>{this.state.changeAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>api.getRewardsAddress(): </span>{this.state.rewardAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>Used Address: </span>{this.state.usedAddress}</p>
-                <p><span style={{ fontWeight: "bold" }}>.getExtensions():</span><ul>{this.state.enabledExtensions && !(this.state.enabledExtensions == "")  ? (this.state.enabledExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No extensions enabled.</li>)}</ul></p>
+                <p><span style={{ fontWeight: "bold" }}>.getExtensions():</span><ul>{this.state.enabledExtensions && !(this.state.enabledExtensions === "")  ? (this.state.enabledExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No extensions enabled.</li>)}</ul></p>
 
                 <hr style={{marginTop: "40px", marginBottom: "10px"}}/>
                 <h1>CIP-95 🤠</h1>
@@ -1131,7 +1143,7 @@ export default class App extends React.Component
                 <p><span style={{ fontWeight: "bold" }}>.getRegisteredPubStakeKeys():</span><ul>{this.state.regStakeKeys && this.state.regStakeKeys.length > 0  ? (this.state.regStakeKeys.map((item, index) => (<li style={{ fontSize: "12px" }} key={index}>{item}</li>))) : (<li>No registered public stake keys returned.</li>)}</ul></p>
                 <p><span style={{fontWeight: "lighter"}}> First registered Stake Key Hash (hex): </span>{this.state.regStakeKeyHashHex}</p>
                 <p><span style={{ fontWeight: "bold" }}>.getUnregisteredPubStakeKeys():</span><ul>{this.state.unregStakeKeys && this.state.unregStakeKeys.length > 0  ? (this.state.unregStakeKeys.map((item, index) => (<li style={{ fontSize: "12px" }} key={index}>{item}</li>))) : (<li>No unregistered public stake keys returned.</li>)}</ul></p>
-                <p><span style={{fontWeight: "lighter"}}> First registered Stake Key Hash (hex): </span>{this.state.unregStakeKeyHashHex}</p>
+                <p><span style={{fontWeight: "lighter"}}> First unregistered Stake Key Hash (hex): </span>{this.state.unregStakeKeyHashHex}</p>
                 
                 <p><span style={{fontWeight: "bold"}}>Use CIP-95 signTx(): </span></p>
                 <Tabs id="cip95" vertical={true} onChange={this.handle95TabId} selectedTab95Id={this.state.selected95TabId}>
@@ -1304,13 +1316,20 @@ export default class App extends React.Component
 
                         </div>
                     } />
+                    <Tab id="8" title="Register First Unregistered Stake Key" panel={
+                        <div style={{marginLeft: "20px"}}>
+
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildStakeKeyRegCert()) }>Build, .signTx() and .submitTx()</button>
+
+                        </div>
+                    } />
                     <Tabs.Expander />
                 </Tabs>
+                <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
                 <p><span style={{fontWeight: "bold"}}>CborHex Tx: </span>{this.state.cip95ResultTx}</p>
                 <p><span style={{fontWeight: "bold"}}>Tx Hash: </span>{this.state.cip95ResultHash}</p>
                 <p><span style={{fontWeight: "bold"}}>Witnesses: </span>{this.state.cip95ResultWitness}</p>
-
-                <hr style={{marginTop: "40px", marginBottom: "40px"}}/>
+                <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
 
             </div>
         )
