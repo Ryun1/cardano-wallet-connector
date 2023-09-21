@@ -457,7 +457,7 @@ export default class App extends React.Component
     }
 
     checkIfCIP95MethodsAvailable = async () => {
-        const hasCIP95Methods =( this.API.hasOwnProperty('getPubDRepKey'));
+        const hasCIP95Methods =( this.API.cip95.hasOwnProperty('getPubDRepKey'));
         console.log(`Has CIP95 .getPubDRepKey(): ${hasCIP95Methods}`)
         return hasCIP95Methods;
     }
@@ -641,7 +641,7 @@ export default class App extends React.Component
     getPubDRepKey = async () => {
         try {
             // From wallet get pub DRep key 
-            const raw = await this.API.getPubDRepKey();
+            const raw = await this.API.cip95.getPubDRepKey();
             const dRepKey = raw;
             // console.log("DRep Key: ", dRepKey);
             this.setState({dRepKey});
@@ -667,7 +667,7 @@ export default class App extends React.Component
 
     getRegisteredPubStakeKeys = async () => {
         try {
-            const raw = await this.API.getRegisteredPubStakeKeys();
+            const raw = await this.API.cip95.getRegisteredPubStakeKeys();
 
             if (raw.length < 1){
                 console.log("No Registered Pub Stake Keys");
@@ -710,7 +710,7 @@ export default class App extends React.Component
 
     getUnregisteredPubStakeKeys = async () => {
         try {
-            const raw = await this.API.getUnregisteredPubStakeKeys();
+            const raw = await this.API.cip95.getUnregisteredPubStakeKeys();
             // Just use the first key for now
             if (raw.length < 1){
                 console.log("No Unregistered Pub Stake Keys");
@@ -1117,9 +1117,9 @@ export default class App extends React.Component
                 <p><span style={{fontWeight: "bold"}}>UTXOs: </span>{this.state.Utxos?.map(x => <li style={{fontSize: "10px"}} key={`${x.str}${x.multiAssetStr}`}>{`${x.str}${x.multiAssetStr}`}</li>)}</p>
                 <p style={{paddingTop: "10px"}}><span style={{fontWeight: "bold"}}>Balance: </span>{this.state.balance}</p>
                 <p><span style={{fontWeight: "bold"}}>Change Address: </span>{this.state.changeAddress}</p>
-                <p><span style={{fontWeight: "bold"}}>api.getRewardsAddress(): </span>{this.state.rewardAddress}</p>
+                <p><span style={{fontWeight: "bold"}}>.getRewardsAddress(): </span>{this.state.rewardAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>Used Address: </span>{this.state.usedAddress}</p>
-                <p><span style={{ fontWeight: "bold" }}>.getExtensions():</span><ul>{this.state.enabledExtensions && !(this.state.enabledExtensions == "")  ? (this.state.enabledExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No extensions enabled.</li>)}</ul></p>
+                <p><span style={{ fontWeight: "bold" }}>.getExtensions():</span><ul>{this.state.enabledExtensions && !(this.state.enabledExtensions === "")  ? (this.state.enabledExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No extensions enabled.</li>)}</ul></p>
 
                 <hr style={{marginTop: "40px", marginBottom: "10px"}}/>
                 <h1>CIP-95 🤠</h1>
