@@ -844,7 +844,6 @@ export default class App extends React.Component
                 txBuilder.add_inputs_from(txUnspentOutputs, 1)
             } catch (err) {
                 console.log("UTxO selection strategy 1 failed, trying strategy 2");
-                console.log(err);
                 txBuilder.add_inputs_from(txUnspentOutputs, 2)            
             }
             // Set change address, incase too much ADA provided for fee
