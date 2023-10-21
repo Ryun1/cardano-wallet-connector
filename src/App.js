@@ -56,11 +56,8 @@ import {
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 let Buffer = require('buffer/').Buffer
-let { bech32 } = require('bech32')
 
-
-export default class App extends React.Component
-{
+class App extends React.Component {
     constructor(props)
     {
         super(props);
@@ -74,79 +71,55 @@ export default class App extends React.Component
             walletIcon: undefined,
             walletAPIVersion: undefined,
             wallets: [],
-
             networkId: undefined,
             Utxos: undefined,
-            CollatUtxos: undefined,
             balance: undefined,
             changeAddress: undefined,
             rewardAddress: undefined,
             usedAddress: undefined,
-
             assetNameHex: "4c494645",
-            assetPolicyIdHex: "ae02017105527c6c0c9840397a39cc5ca39fabe5b9998ba70fda5f2f",
-            assetAmountToSend: 5,
-            addressScriptBech32: "addr_test1wpnlxv2xv9a9ucvnvzqakwepzl9ltx7jzgm53av2e9ncv4sysemm8",
-            datumStr: "12345678",
-            plutusScriptCborHex: "4e4d01000033222220051200120011",
-            transactionIdLocked: "",
-            transactionIndxLocked: 0,
-            lovelaceLocked: 3000000,
-            manualFee: 900000,
-
             // CIP-95 Stuff
+            supportedExtensions: [],
+            enabledExtensions: [],
             selected95BasicTabId: "1",
             selected95ActionsTabId: "1",
             selected95MiscTabId: "1",
-            selectedCIP95: false,
-            // DRep key items
+            selectedCIP95: true,
+            // Keys
             dRepKey: undefined,
             dRepID: undefined,
             dRepIDBech32: undefined,
-            // stake key items
             regStakeKeys: [],
             unregStakeKeys: [],
             regStakeKey: undefined,
             unregStakeKey: undefined,
             regStakeKeyHashHex: undefined,
             unregStakeKeyHashHex: undefined,
-            // transaction items
+            // Txs
             cip95ResultTx: "",
             cip95ResultHash: "",
             cip95ResultWitness: "",
             cip95MetadataURL: undefined,
             cip95MetadataHash: undefined,
-            
-            // Conway Alpha
-            certBuilder: "",
-            votingBuilder: "",
-            govActionBuilder: "",
-
-            // vote delegation
+            certBuilder: undefined,
+            votingBuilder: undefined,
+            govActionBuilder: undefined,
+            // Certs
             voteDelegationTarget: "",
-        
-            // DRep Retirement
-            dRepRetirementEpoch : undefined,
-
-            // vote
+            voteDelegationStakeCred: "",
+            dRepRegTarget: "",
             voteGovActionTxHash: "",
             voteGovActionIndex: "",
             voteChoice: "",
-
             stakeKeyReg: "",
             stakeKeyUnreg: "",
-
+            // Gov actions
             constURL: "",
             constHash: "",
-
             treasuryTarget: "",
             treasuryAmount: "",
-
             hardForkUpdateMajor: "",
             hardForkUpdateMinor: "",
-
-            supportedExtensions: [],
-            enabledExtensions: [],
         }
 
         /**
@@ -156,20 +129,6 @@ export default class App extends React.Component
          */
         this.API = undefined;
 
-        /**
-         * Protocol parameters
-         * @type {{
-         * keyDeposit: string,
-         * coinsPerUtxoWord: string,
-         * minUtxo: string,
-         * poolDeposit: string,
-         * maxTxSize: number,
-         * priceMem: number,
-         * maxValSize: number,
-         * linearFee: {minFeeB: string, minFeeA: string}, priceStep: number,
-         * votingProposalDeposit: string
-         * }}
-         */
         this.protocolParams = {
             linearFee: {
                 minFeeA: "44",
@@ -186,7 +145,6 @@ export default class App extends React.Component
             // Conway Alpha
             votingProposalDeposit: "0",
         }
-
         this.pollWallets = this.pollWallets.bind(this);
     }
 
@@ -194,10 +152,6 @@ export default class App extends React.Component
      * Poll the wallets it can read from the browser.
      * Sometimes the html document loads before the browser initialized browser plugins (like Nami or Flint).
      * So we try to poll the wallets 3 times (with 1 second in between each try).
-     *
-     * Note: CCVault and Eternl are the same wallet, Eternl is a rebrand of CCVault
-     * So both of these wallets as the Eternl injects itself twice to maintain
-     * backward compatibility
      *
      * @param count The current try count.
      */
@@ -222,11 +176,6 @@ export default class App extends React.Component
         });
     }
 
-    /**
-     * Handles the radio buttons on the form that
-     * let the user choose which wallet to work with
-     * @param obj
-     */
     handleWalletSelect = (obj) => {
         const whichWalletSelected = obj.target.value
         this.setState({whichWalletSelected},
@@ -235,12 +184,6 @@ export default class App extends React.Component
             })
     }
 
-    /**
-     * Checks if the wallet is running in the browser
-     * Does this for Nami, Eternl and Flint wallets
-     * @returns {boolean}
-     */
-
     checkIfWalletFound = () => {
         const walletKey = this.state.whichWalletSelected;
         const walletFound = !!window?.cardano?.[walletKey];
@@ -248,14 +191,8 @@ export default class App extends React.Component
         return walletFound;
     }
 
-    /**
-     * Checks if a connection has been established with
-     * the wallet
-     * @returns {Promise<boolean>}
-     */
     checkIfWalletEnabled = async () => {
         let walletIsEnabled = false;
-
         try {
             const walletName = this.state.whichWalletSelected;
             walletIsEnabled = await window.cardano[walletName].isEnabled();
@@ -263,17 +200,8 @@ export default class App extends React.Component
             console.log(err)
         }
         this.setState({walletIsEnabled});
-
         return walletIsEnabled;
     }
-
-    /**
-     * Enables the wallet that was chosen by the user
-     * When this executes the user should get a window pop-up
-     * from the wallet asking to approve the connection
-     * of this app to the wallet
-     * @returns {Promise<boolean>}
-     */
 
     enableWallet = async () => {
         const walletKey = this.state.whichWalletSelected;
@@ -285,23 +213,12 @@ export default class App extends React.Component
         return this.checkIfWalletEnabled();
     }
 
-    /**
-     * Get the API version used by the wallets
-     * writes the value to state
-     * @returns {*}
-     */
     getAPIVersion = () => {
         const walletKey = this.state.whichWalletSelected;
         const walletAPIVersion = window?.cardano?.[walletKey].apiVersion;
         this.setState({walletAPIVersion})
         return walletAPIVersion;
     }
-
-    /**
-     * Get the name of the wallet (nami, eternl, flint)
-     * and store the name in the state
-     * @returns {*}
-     */
 
     getWalletName = () => {
         const walletKey = this.state.whichWalletSelected;
@@ -326,24 +243,15 @@ export default class App extends React.Component
         try {
             const enabledExtensions = await this.API.getExtensions();
             this.setState({enabledExtensions})
-
         } catch (err) {
             console.log(err)
         }
     }
 
-    /**
-     * Gets the Network ID to which the wallet is connected
-     * 0 = testnet
-     * 1 = mainnet
-     * Then writes either 0 or 1 to state
-     * @returns {Promise<void>}
-     */
     getNetworkId = async () => {
         try {
             const networkId = await this.API.getNetworkId();
             this.setState({networkId})
-
         } catch (err) {
             console.log(err)
         }
@@ -354,14 +262,10 @@ export default class App extends React.Component
      * stores in an object in the state
      * @returns {Promise<void>}
      */
-
     getUtxos = async () => {
-
         let Utxos = [];
-
         try {
             const rawUtxos = await this.API.getUtxos();
-
             for (const rawUtxo of rawUtxos) {
                 const utxo = TransactionUnspentOutput.from_bytes(Buffer.from(rawUtxo, "hex"));
                 const input = utxo.input();
@@ -371,13 +275,10 @@ export default class App extends React.Component
                 const amount = output.amount().coin().to_str(); // ADA amount in lovelace
                 const multiasset = output.amount().multiasset();
                 let multiAssetStr = "";
-
                 if (multiasset) {
                     const keys = multiasset.keys() // policy Ids of thee multiasset
                     const N = keys.len();
                     // console.log(`${N} Multiassets in the UTXO`)
-
-
                     for (let i = 0; i < N; i++){
                         const policyId = keys.get(i);
                         const policyIdHex = Buffer.from(policyId.to_bytes(), "utf8").toString('hex');
@@ -398,8 +299,6 @@ export default class App extends React.Component
                         }
                     }
                 }
-
-
                 const obj = {
                     txid: txid,
                     txindx: txindx,
@@ -417,29 +316,16 @@ export default class App extends React.Component
         }
     }
 
-    /**
-     * Gets the current balance of in Lovelace in the user's wallet
-     * This doesnt resturn the amounts of all other Tokens
-     * For other tokens you need to look into the full UTXO list
-     * @returns {Promise<void>}
-     */
     getBalance = async () => {
         try {
             const balanceCBORHex = await this.API.getBalance();
-
             const balance = Value.from_bytes(Buffer.from(balanceCBORHex, "hex")).coin().to_str();
             this.setState({balance})
-
         } catch (err) {
             console.log(err)
         }
     }
 
-    /**
-     * Get the address from the wallet into which any spare UTXO should be sent
-     * as change when building transactions.
-     * @returns {Promise<void>}
-     */
     getChangeAddress = async () => {
         try {
             const raw = await this.API.getChangeAddress();
@@ -450,30 +336,19 @@ export default class App extends React.Component
         }
     }
 
-    /**
-     * This is the Staking address into which rewards from staking get paid into
-     * @returns {Promise<void>}
-     */
     getRewardAddresses = async () => {
-
         try {
             const raw = await this.API.getRewardAddresses();
             const rawFirst = raw[0];
             const rewardAddress = Address.from_bytes(Buffer.from(rawFirst, "hex")).to_bech32()
             // console.log(rewardAddress)
             this.setState({rewardAddress})
-
         } catch (err) {
             console.log(err)
         }
     }
 
-    /**
-     * Gets previsouly used addresses
-     * @returns {Promise<void>}
-     */
     getUsedAddresses = async () => {
-
         try {
             const raw = await this.API.getUsedAddresses();
             const rawFirst = raw[0];
@@ -486,176 +361,116 @@ export default class App extends React.Component
     }
 
     checkIfCIP95MethodsAvailable = async () => {
-        const hasCIP95Methods =( this.API.cip95.hasOwnProperty('getPubDRepKey'));
-        // console.log(`Has CIP95 .getPubDRepKey(): ${hasCIP95Methods}`)
+        const hasCIP95Methods = ( 
+            this.API.cip95.hasOwnProperty('getPubDRepKey') 
+            && this.API.cip95.hasOwnProperty('getRegisteredPubStakeKeys')
+            && this.API.cip95.hasOwnProperty('getUnregisteredPubStakeKeys'));
         return hasCIP95Methods;
     }
+
+    refreshCIP30State = async () => {
+        await this.setState({
+            Utxos: null,
+            balance: null,
+            changeAddress: null,
+            rewardAddress: null,
+            usedAddress: null,
+            supportedExtensions: [],
+            enabledExtensions: [],
+        });
+    }
+
+    refreshCIP95State = async () => {
+        await this.setState({
+            // Keys
+            dRepKey: undefined,
+            dRepID: undefined,
+            dRepIDBech32: undefined,
+            regStakeKeys: [],
+            unregStakeKeys: [],
+            regStakeKey: undefined,
+            unregStakeKey: undefined,
+            regStakeKeyHashHex: undefined,
+            unregStakeKeyHashHex: undefined,
+            // Txs
+            cip95ResultTx: "",
+            cip95ResultHash: "",
+            cip95ResultWitness: "",
+            cip95MetadataURL: undefined,
+            cip95MetadataHash: undefined,
+            certBuilder: undefined,
+            votingBuilder: undefined,
+            govActionBuilder: undefined,
+            // Certs
+            voteDelegationTarget: "",
+            voteDelegationStakeCred: "",
+            dRepRegTarget: "",
+            voteGovActionTxHash: "",
+            voteGovActionIndex: "",
+            voteChoice: "",
+            stakeKeyReg: "",
+            stakeKeyUnreg: "",
+            // Gov actions
+            constURL: "",
+            constHash: "",
+            treasuryTarget: "",
+            treasuryAmount: "",
+            hardForkUpdateMajor: "",
+            hardForkUpdateMinor: "",
+        });
+    }
+
     /**
      * Refresh all the data from the user's wallet
      * @returns {Promise<void>}
      */
     refreshData = async () => {
-
-        try{
+        try {
             const walletFound = this.checkIfWalletFound();
-
-            if (walletFound && this.state.selectedCIP95) {
+            // If wallet found and CIP-95 selected perform CIP-30 initial API calls
+            if (walletFound) {
                 await this.getAPIVersion();
                 await this.getWalletName();
                 this.getSupportedExtensions();
-                const walletEnabled = await this.enableCIP95Wallet();
-                const hasCIP95Methods = await this.checkIfCIP95MethodsAvailable();
-
-                if (walletEnabled && hasCIP95Methods) {
+                // If CIP-95 checkbox selected attempt to connect to wallet with CIP-95
+                let walletEnabled;
+                let hasCIP95Methods;
+                if (this.state.selectedCIP95) {
+                    walletEnabled = await this.enableCIP95Wallet();
+                    hasCIP95Methods = await this.checkIfCIP95MethodsAvailable();
+                } else {
+                    // else connect to wallet without CIP-95
+                    walletEnabled = await this.enableWallet()
+                    await this.refreshCIP95State();
+                }
+                // If wallet is enabled/connected
+                if (walletEnabled) {
+                    // CIP-30 API calls
                     await this.getNetworkId();
                     await this.getUtxos();
                     await this.getBalance();
                     await this.getChangeAddress();
                     await this.getRewardAddresses();
                     await this.getUsedAddresses();
-                    await this.getPubDRepKey();
-                    await this.getRegisteredPubStakeKeys();
-                    await this.getUnregisteredPubStakeKeys();
                     await this.getEnabledExtensions();
-                } else {
-                    await this.setState({
-                        Utxos: null,
-                        CollatUtxos: null,
-                        balance: null,
-                        changeAddress: null,
-                        rewardAddress: null,
-                        usedAddress: null,
-
-                        dRepKey: "",
-                        dRepID: "",
-                        dRepIDBech32: "",
-                        regStakeKeys: [],
-                        unregStakeKeys: [],
-                        regStakeKey: "",
-                        unregStakeKey: "",
-                        regStakeKeyHashHex: "",
-                        unregStakeKeyHashHex: "",
-                        cip95ResultTx: "",
-                        cip95ResultHash: "",
-                        cip95ResultWitness: "",
-                        cip95MetadataURL: "",
-                        cip95MetadataHash: "",
-                        certBuilder: "",
-                        votingBuilder: "",
-                        govActionBuilder: "",
-                        voteDelegationTarget: "",
-                        voteGovActionTxHash: "",
-                        voteGovActionIndex: "",
-                        voteChoice: "",
-                        stakeKeyReg: "",
-                        stakeKeyUnreg: "",
-                        constURL: "",
-                        constHash: "",
-                        treasuryTarget: "",
-                        treasuryAmount: "",
-                        hardForkUpdateMajor: "",
-                        hardForkUpdateMinor: "",
-                        supportedExtensions: [],
-                        enabledExtensions: [],
-                    });
-                }
-            } else if (walletFound) {
-                    await this.getAPIVersion();
-                    await this.getWalletName();
-                    this.getSupportedExtensions();
-                    const walletEnabled = await this.enableWallet();
-                    if (walletEnabled) {
-                        await this.getNetworkId();
-                        await this.getUtxos();
-                        await this.getBalance();
-                        await this.getChangeAddress();
-                        await this.getRewardAddresses();
-                        await this.getUsedAddresses();
-                        await this.getEnabledExtensions();
-                    } else {
-                        await this.setState({
-                            Utxos: null,
-                            CollatUtxos: null,
-                            balance: null,
-                            changeAddress: null,
-                            rewardAddress: null,
-                            usedAddress: null,
-    
-                            dRepKey: "",
-                            dRepID: "",
-                            dRepIDBech32: "",
-                            regStakeKeys: [],
-                            unregStakeKeys: [],
-                            regStakeKey: "",
-                            unregStakeKey: "",
-                            regStakeKeyHashHex: "",
-                            unregStakeKeyHashHex: "",
-                            cip95ResultTx: "",
-                            cip95ResultHash: "",
-                            cip95ResultWitness: "",
-                            certBuilder: "",
-                            votingBuilder: "",
-                            govActionBuilder: "",
-                            cip95MetadataURL: "",
-                            cip95MetadataHash: "",
-                            voteDelegationTarget: "",
-                            voteGovActionTxHash: "",
-                            voteGovActionIndex: "",
-                            voteChoice: "",
-                            stakeKeyReg: "",
-                            constURL: "",
-                            constHash: "",
-                            treasuryTarget: "",
-                            treasuryAmount: "",
-                            hardForkUpdateMajor: "",
-                            hardForkUpdateMinor: "",
-                            stakeKeyUnreg: "",
-                            supportedExtensions: [],
-                            enabledExtensions: [],
-                        });
+                    // If connection was CIP95 and wallet has CIP95 methods
+                    if (hasCIP95Methods) {
+                        // CIP-95 API calls
+                        await this.getPubDRepKey();
+                        await this.getRegisteredPubStakeKeys();
+                        await this.getUnregisteredPubStakeKeys();
                     }
+                // else if connection failed, reset all state
+                } else {
+                    this.setState({walletIsEnabled: false})
+                    await this.refreshCIP30State();
+                    await this.refreshCIP95State();
+                }
+            // else if there are no wallets found, reset all state
             } else {
-                await this.setState({
-                    walletIsEnabled: false,
-
-                    Utxos: null,
-                    CollatUtxos: null,
-                    balance: null,
-                    changeAddress: null,
-                    rewardAddress: null,
-                    usedAddress: null,
-
-                    dRepKey: "",
-                    dRepID: "",
-                    dRepIDBech32: "",
-                    regStakeKeys: [],
-                    unregStakeKeys: [],
-                    regStakeKey: "",
-                    unregStakeKey: "",
-                    regStakeKeyHashHex: "",
-                    unregStakeKeyHashHex: "",
-                    cip95ResultTx: "",
-                    cip95ResultHash: "",
-                    cip95ResultWitness: "",
-                    cip95MetadataURL: "",
-                    cip95MetadataHash: "",
-                    certBuilder: "",
-                    votingBuilder: "",
-                    voteDelegationTarget: "",
-                    voteGovActionTxHash: "",
-                    voteGovActionIndex: "",
-                    voteChoice: "",
-                    stakeKeyReg: "",
-                    constURL: "",
-                    constHash: "",
-                    treasuryTarget: "",
-                    treasuryAmount: "",
-                    hardForkUpdateMajor: "",
-                    hardForkUpdateMinor: "",
-                    stakeKeyUnreg: "",
-                    supportedExtensions: "",
-                    enabledExtensions: "",
-                });
+                this.setState({walletIsEnabled: false})
+                await this.refreshCIP30State();
+                await this.refreshCIP95State();
             }
         } catch (err) {
             console.log(err)
@@ -669,7 +484,6 @@ export default class App extends React.Component
      * @returns {Promise<TransactionBuilder>}
      */
     initTransactionBuilder = async () => {
-
         const txBuilder = TransactionBuilder.new(
             TransactionBuilderConfigBuilder.new()
                 .fee_algo(LinearFee.new(BigNum.from_str(this.protocolParams.linearFee.minFeeA), BigNum.from_str(this.protocolParams.linearFee.minFeeB)))
@@ -681,9 +495,9 @@ export default class App extends React.Component
                 .prefer_pure_change(true)
                 .build()
         );
-
         return txBuilder
     }
+    
     /**
      * Builds an object with all the UTXOs from the user's wallet
      * @returns {Promise<TransactionUnspentOutputs>}
@@ -696,27 +510,18 @@ export default class App extends React.Component
         return txOutputs
     }
 
-    // CIP-95 Parts
     getPubDRepKey = async () => {
         try {
             // From wallet get pub DRep key 
-            const raw = await this.API.cip95.getPubDRepKey();
-            const dRepKey = raw;
-            // console.log("DRep Key: ", dRepKey);
+            const dRepKey = await this.API.cip95.getPubDRepKey();
+            const dRepID = (PublicKey.from_hex(dRepKey)).hash();
             this.setState({dRepKey});
-            
-            // From wallet's DRep key hash to get DRep ID 
-            const dRepKeyBytes = Buffer.from(dRepKey, "hex");
-            const dRepID = ((PublicKey.from_bytes(dRepKeyBytes)).hash());
-            // console.log("DRep ID Hex: ", dRepID);
-            this.setState({dRepID: Buffer.from(dRepID.to_bytes()).toString('hex')});
-
-            // into bech32
-            const words = bech32.toWords(Buffer.from(dRepID.to_bytes()));
-            const dRepIDBech32 = bech32.encode('drep', words);
-            // console.log("DRep ID Bech: ", dRepIDBech32);
+            this.setState({dRepID : dRepID.to_hex()});
+            const dRepIDBech32 = dRepID.to_bech32('drep');
             this.setState({dRepIDBech32});
-
+            // Default use the wallet's DRepID for DRep registration
+            this.setState({dRepRegTarget: dRepIDBech32});
+            // Default use the wallet's DRepID for Vote delegation target
             this.setState({voteDelegationTarget: dRepIDBech32});
         } catch (err) {
             console.log(err)
@@ -729,39 +534,19 @@ export default class App extends React.Component
             if (raw.length < 1){
                 console.log("No Registered Pub Stake Keys");
             } else {
-
                 // Set array
                 const regStakeKeys = raw;
                 this.setState({regStakeKeys})
-
                 // Just use the first key for now 
                 const regStakeKey = regStakeKeys[0];
-                // console.log("Reg stake Key: ", regStakeKey);
                 this.setState({regStakeKey})
-
-                const stakeKeyBytes = Buffer.from(regStakeKey, 'hex');
-
                 // Hash the stake key
-                const stakeKeyHash = ((PublicKey.from_bytes(stakeKeyBytes)).hash());
-                // console.log("Reg stake Key Hash: ", Buffer.from(stakeKeyHash.to_bytes()).toString('hex'));
-                this.setState({regStakeKeyHashHex: Buffer.from(stakeKeyHash.to_bytes()).toString('hex')});
-
-                // Set default stake key to register as the first unregistered key
-                this.setState({stakeKeyUnreg : Buffer.from(stakeKeyHash.to_bytes()).toString('hex')})
-
-                // Make a StakeCredential from the hash
-                // const stakeCredential = Credential.from_keyhash(stakeKeyHash);
-                // console.log("Reg stake Credential: ", Buffer.from(stakeCredential.to_bytes()).toString('hex'));
-
-                // Make a StakeAddress Hex from the credential
-                // const stakeAddrTestHex = Buffer.from((RewardAddress.new(0, stakeCredential)).to_address().to_bytes()).toString('hex');
-                // const stakeAddrMainHex = Buffer.from((RewardAddress.new(1, stakeCredential)).to_address().to_bytes()).toString('hex');
-                // console.log("Testnet Reg stake Address (Hex): ", stakeAddrTestHex);
-                // console.log("Mainnet Reg stake Address (Hex): ", stakeAddrMainHex);
-
-                // Make a StakeAddress Bech from the credential
-                // console.log("Testnet Reg stake Address (Bech): ", (RewardAddress.new(0, stakeCredential)).to_address().to_bech32());
-                // console.log("Mainnet Reg stake Address (Bech): ", (RewardAddress.new(1, stakeCredential)).to_address().to_bech32());
+                const stakeKeyHash = ((PublicKey.from_hex(regStakeKey)).hash()).to_hex();
+                this.setState({regStakeKeyHashHex: stakeKeyHash});
+                // Set default stake key for vote delegation to the first registered key
+                this.setState({voteDelegationStakeCred : stakeKeyHash});
+                // Set default stake key to unregister as the first registered key
+                this.setState({stakeKeyUnreg : stakeKeyHash});
             }
         } catch (err) {
             console.log(err)
@@ -771,42 +556,20 @@ export default class App extends React.Component
     getUnregisteredPubStakeKeys = async () => {
         try {
             const raw = await this.API.cip95.getUnregisteredPubStakeKeys();
-            // Just use the first key for now
             if (raw.length < 1){
-                // console.log("No Unregistered Pub Stake Keys");
+                // console.log("No Registered Pub Stake Keys");
             } else {
-
                 // Set array
                 const unregStakeKeys = raw;
                 this.setState({unregStakeKeys})
-
+                // Just use the first key for now 
                 const unregStakeKey = unregStakeKeys[0];
-                // console.log("Unreg stake Key: ", unregStakeKey);
                 this.setState({unregStakeKey})
-
-                const stakeKeyBytes = Buffer.from(unregStakeKey, 'hex');
-
                 // Hash the stake key
-                const stakeKeyHash = ((PublicKey.from_bytes(stakeKeyBytes)).hash());
-                // console.log("Unreg stake Key Hash: ", Buffer.from(stakeKeyHash.to_bytes()).toString('hex'));
-                this.setState({unregStakeKeyHashHex: Buffer.from(stakeKeyHash.to_bytes()).toString('hex')});
-
+                const stakeKeyHash = ((PublicKey.from_hex(unregStakeKey)).hash()).to_hex();
+                this.setState({unregStakeKeyHashHex: stakeKeyHash});
                 // Set default stake key to register as the first unregistered key
-                this.setState({stakeKeyReg : Buffer.from(stakeKeyHash.to_bytes()).toString('hex')})
-
-                // Make a StakeCredential from the hash
-                // const stakeCredential = Credential.from_keyhash(stakeKeyHash);
-                // console.log("Unreg stake Credential: ", Buffer.from(stakeCredential.to_bytes()).toString('hex'));
-
-                // Make a StakeAddress Hex from the credential
-                // const stakeAddrTestHex = Buffer.from((RewardAddress.new(0, stakeCredential)).to_address().to_bytes()).toString('hex');
-                // const stakeAddrMainHex = Buffer.from((RewardAddress.new(1, stakeCredential)).to_address().to_bytes()).toString('hex');
-                // console.log("Testnet Unreg stake Address (Hex): ", stakeAddrTestHex);
-                // console.log("Mainnet Unreg stake Address (Hex): ", stakeAddrMainHex);
-
-                // Make a StakeAddress Bech from the credential
-                // console.log("Testnet Unreg stake Address (Bech): ", (RewardAddress.new(0, stakeCredential)).to_address().to_bech32());
-                // console.log("Mainnet Unreg stake Address (Bech): ", (RewardAddress.new(1, stakeCredential)).to_address().to_bech32());
+                this.setState({stakeKeyReg : stakeKeyHash});
             }
         } catch (err) {
             console.log(err)
@@ -832,29 +595,27 @@ export default class App extends React.Component
     }
 
     buildSubmitConwayTx = async (builderSuccess) => {
-        try {  
-
+        try {
+            // Abort if error before building Tx
             if (!(await builderSuccess)){
                 throw "Error before building Tx, aborting Tx build."
             }
-
             // Initialize builder with protocol parameters
             const txBuilder = await this.initTransactionBuilder();
-
-            // Set the certificate to the current certbuilder
-            if(!(this.state.certBuilder === "")){
+            // Add certs, votes or gov actions to the transaction
+            if(this.state.certBuilder){
                 txBuilder.set_certs_builder(this.state.certBuilder);
-                this.setState({certBuilder : ""});
+                this.setState({certBuilder : undefined});
             }
-            if(!(this.state.votingBuilder === "")){
+            if(this.state.votingBuilder){
                 txBuilder.set_voting_builder(this.state.votingBuilder);
-                this.setState({votingBuilder : ""});
+                this.setState({votingBuilder : undefined});
             }
-            if(!(this.state.govActionBuilder === "")){
+            if(this.state.govActionBuilder){
                 txBuilder.set_voting_proposal_builder(this.state.govActionBuilder);
-                this.setState({govActionBuilder : ""});
+                this.setState({govActionBuilder : undefined});
             }
-
+            
             // Set output and change addresses to those of our wallet
             const shelleyOutputAddress = Address.from_bech32(this.state.usedAddress);
             const shelleyChangeAddress = Address.from_bech32(this.state.changeAddress);
@@ -867,9 +628,10 @@ export default class App extends React.Component
                     Value.new(BigNum.from_str("3000000"))
                 ),
             );
-            // Find the available UTXOs in the wallet and use them as Inputs for the transaction
+            // Find the available UTxOs in the wallet and use them as Inputs for the transaction
+            await this.getUtxos();
             const txUnspentOutputs = await this.getTxUnspentOutputs();
-            // Use UTxO selection strategy 2 if 1 not possible
+            // Use UTxO selection strategy 2
             txBuilder.add_inputs_from(txUnspentOutputs, 2)
 
             // Set change address, incase too much ADA provided for fee
@@ -882,8 +644,6 @@ export default class App extends React.Component
                 txBody,
                 TransactionWitnessSet.from_bytes(transactionWitnessSet.to_bytes()),
             );
-
-            // console.log("UnSigned Tx: ", tx.to_json());
 
             // Ask wallet to to provide signature (witnesses) for the transaction
             let txVkeyWitnesses;
@@ -911,8 +671,8 @@ export default class App extends React.Component
             this.setState({cip95ResultHash});
             this.setState({cip95ResultWitness});
             // Reset anchor state
-            this.setState({cip95MetadataURL : ""});
-            this.setState({cip95MetadataHash : ""});
+            this.setState({cip95MetadataURL : undefined});
+            this.setState({cip95MetadataHash : undefined});
 
         } catch (err) {
             console.log("Error during build, sign and submit transaction");
@@ -951,33 +711,23 @@ export default class App extends React.Component
         }
     }
 
-    buildVoteDelegationCert = async (target) => {
+    buildVoteDelegationCert = async () => {
         try {
             // Build Vote Delegation Certificate using wallets stake credential
             const certBuilder = CertificatesBuilder.new();
-            // Use stake key hash from wallet
-            let stakeKeyHash;
-            if (this.state.regStakeKeyHashHex === "") {
-                console.log("Warning: Using unregistered stake key for vote delegation, this will error when submitting");
-                stakeKeyHash = Ed25519KeyHash.from_hex(this.state.unregStakeKeyHashHex);
-            } else {
-                stakeKeyHash = Ed25519KeyHash.from_hex(this.state.regStakeKeyHashHex);
-            };
-            const stakeCred = Credential.from_keyhash(stakeKeyHash);
+            const stakeCred = await this.handleInputToCredential(this.state.voteDelegationStakeCred);
             // Create correct DRep
             let targetDRep
-            if ((target.dRep).toUpperCase() === 'ABSTAIN') {
+            if ((this.state.voteDelegationTarget).toUpperCase() === 'ABSTAIN') {
                 targetDRep = DRep.new_always_abstain();
-            }else if ((target.dRep).toUpperCase() === 'NO CONFIDENCE') {
+            } else if ((this.state.voteDelegationTarget).toUpperCase() === 'NO CONFIDENCE') {
                 targetDRep = DRep.new_always_no_confidence();
-            }else{
-                targetDRep = DRep.new_key_hash(Ed25519KeyHash.from_bech32(target.dRep));
+            } else {
+                const dRepKeyCred = await this.handleInputToCredential(this.state.voteDelegationTarget)
+                targetDRep = DRep.new_key_hash(dRepKeyCred.to_keyhash());
             };
             // Create cert object
-            const voteDelegationCert = VoteDelegation.new(
-                stakeCred,
-                targetDRep,
-            );
+            const voteDelegationCert = VoteDelegation.new(stakeCred, targetDRep);
             // add cert to txbuilder
             certBuilder.add(Certificate.new_vote_delegation(voteDelegationCert));
             this.setState({certBuilder : certBuilder});
@@ -988,34 +738,47 @@ export default class App extends React.Component
         }
     }
 
+    handleInputToCredential = async (input) => {
+        try {
+          const keyHash = Ed25519KeyHash.from_hex(input);
+          const cred = Credential.from_keyhash(keyHash);
+          return cred;
+        } catch (err1) {
+          try {
+            const keyHash = Ed25519KeyHash.from_bech32(input);
+            const cred = Credential.from_keyhash(keyHash);
+            return cred;
+          } catch (err2) {
+            console.error('Error in parsing credential, not Hex or Bech32:', err1, err2);
+            return null;
+          }
+        }
+    }
+
     buildDRepRegCert = async () => {
         try {
             // Build DRep Registration Certificate
             const certBuilder = CertificatesBuilder.new();
-            // Get wallet's DRep key
-            const dRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
-            const dRepCred = Credential.from_keyhash(dRepKeyHash);
-
+            const dRepCred = await this.handleInputToCredential(this.state.dRepRegTarget);
             let dRepRegCert;
             // If there is an anchor
-            if (!(this.state.cip95MetadataURL === "" && this.state.cip95MetadataHash === "")) {
+            if (this.state.cip95MetadataURL && this.state.cip95MetadataHash) {
                 const anchorURL = URL.new(this.state.cip95MetadataURL);
                 const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
                 const anchor = Anchor.new(anchorURL, anchorHash);
-                // Create cert object using one Ada as the deposit
+                // Create cert object
                 dRepRegCert = DrepRegistration.new_with_anchor(
                     dRepCred,
-                    BigNum.from_str("0"), // deposit
+                    BigNum.from_str("0"),
                     anchor
                 );
-            }else{
-                console.log("DRep Registration - not using anchor")
+            } else {
                 dRepRegCert = DrepRegistration.new(
                     dRepCred,
                     BigNum.from_str("0"),
                 );
             };
-            // add cert to txbuilder
+            // add cert to certbuilder
             certBuilder.add(Certificate.new_drep_registration(dRepRegCert));
             this.setState({certBuilder : certBuilder});
             return true;
@@ -1029,28 +792,26 @@ export default class App extends React.Component
         try {
             // Build DRep Registration Certificate
             const certBuilder = CertificatesBuilder.new();
-
-            // Get wallet's DRep key
+            // Use the wallet's DRep ID
             const dRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
             const dRepCred = Credential.from_keyhash(dRepKeyHash);
-
             let dRepUpdateCert;
             // If there is an anchor
-            if (!(this.state.cip95MetadataURL === "" && this.state.cip95MetadataHash === "")) {
+            if (this.state.cip95MetadataURL && this.state.cip95MetadataHash) {
                 const anchorURL = URL.new(this.state.cip95MetadataURL);
                 const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
                 const anchor = Anchor.new(anchorURL, anchorHash);
-                // Create cert object using one Ada as the deposit
+                // Create cert object
                 dRepUpdateCert = DrepUpdate.new_with_anchor(
                     dRepCred,
                     anchor
                 );
-            }else{
+            } else {
                 dRepUpdateCert = DrepUpdate.new(
                     dRepCred,
                 );
             };
-            // add cert to tbuilder
+            // add cert to certbuilder
             certBuilder.add(Certificate.new_drep_update(dRepUpdateCert));
             this.setState({certBuilder : certBuilder});
             return true;
@@ -1064,15 +825,14 @@ export default class App extends React.Component
         try {
             // Build DRep Registration Certificate
             const certBuilder = CertificatesBuilder.new();
-            // Get wallet's DRep key
+            // Use the wallet's DRep ID
             const dRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
             const dRepCred = Credential.from_keyhash(dRepKeyHash);
-        
             const dRepRetirementCert = DrepDeregistration.new(
                 dRepCred,
                 BigNum.from_str("0"),
             );
-            // add cert to tbuilder
+            // add cert to certbuilder
             certBuilder.add(Certificate.new_drep_deregistration(dRepRetirementCert));
             this.setState({certBuilder : certBuilder});
             return true;
@@ -1086,10 +846,10 @@ export default class App extends React.Component
         try {
             // Use wallet's DRep key
             const dRepKeyHash = Ed25519KeyHash.from_hex(this.state.dRepID);
-            // Use connected wallet as voter
             const voter = Voter.new_drep(Credential.from_keyhash(dRepKeyHash))
             // What is being voted on
-            const govActionId = GovernanceActionId.new(TransactionHash.from_hex(this.state.voteGovActionTxHash), this.state.voteGovActionIndex);
+            const govActionId = GovernanceActionId.new(
+                TransactionHash.from_hex(this.state.voteGovActionTxHash), this.state.voteGovActionIndex);
             // Voting choice
             let votingChoice;
             if ((this.state.voteChoice).toUpperCase() === "YES") {
@@ -1099,13 +859,11 @@ export default class App extends React.Component
             } else if ((this.state.voteChoice).toUpperCase() === "ABSTAIN") {
                 votingChoice = 2
             }
-
             let votingProcedure;
-            if (!(this.state.cip95MetadataURL === "" && this.state.cip95MetadataHash === "")) {
+            if (this.state.cip95MetadataURL && this.state.cip95MetadataHash) {
                 const anchorURL = URL.new(this.state.cip95MetadataURL);
                 const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
                 const anchor = Anchor.new(anchorURL, anchorHash);
-                // Create cert object using one Ada as the deposit
                 votingProcedure = VotingProcedure.new_with_anchor(votingChoice, anchor);
             } else {
                 votingProcedure = VotingProcedure.new(votingChoice);
@@ -1114,7 +872,6 @@ export default class App extends React.Component
             const votingBuilder = VotingBuilder.new();
             votingBuilder.add(voter, govActionId, votingProcedure);
             this.setState({votingBuilder});
-            
             return true;
         } catch (err) {
             console.log(err);
@@ -1315,15 +1072,14 @@ export default class App extends React.Component
         await this.refreshData();
     }
 
-    render()
-    {
+    render(){
         return (
             <div style={{margin: "20px"}}>
 
                 <h1>✨demos CIP-95 dApp✨</h1>
                 <h4>✨v1.5.6✨</h4>
 
-                <input type="checkbox" onChange={this.handleCIP95Select}/> Enable CIP-95?
+                <input type="checkbox" checked={this.state.selectedCIP95} onChange={this.handleCIP95Select}/> Enable CIP-95?
 
                 <div style={{paddingTop: "10px"}}>
                     <div style={{marginBottom: 15}}>Select wallet:</div>
@@ -1344,7 +1100,6 @@ export default class App extends React.Component
                         )}
                     </RadioGroup>
                 </div>
-
                 <button style={{padding: "20px"}} onClick={this.refreshData}>Refresh</button> 
                 <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
                 <h3>CIP-30 Initial API</h3>
@@ -1352,9 +1107,8 @@ export default class App extends React.Component
                 <p><span style={{fontWeight: "bold"}}>Wallet Connected: </span>{`${this.state.walletIsEnabled}`}</p>
                 <p><span style={{fontWeight: "bold"}}>Wallet API version: </span>{this.state.walletAPIVersion}</p>
                 <p><span style={{fontWeight: "bold"}}>Wallet name: </span>{this.state.walletName}</p>
-                <p><span style={{ fontWeight: "bold" }}>.getSupportedExtensions():</span><ul>{this.state.supportedExtensions ? (this.state.supportedExtensions.map((x) => (<li style={{ fontSize: "12px"}} key={x.cip}>{x.cip}</li>))) : (<li>No supported extensions found.</li>)}</ul></p>
-                
-                <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
+                <p><span style={{ fontWeight: "bold" }}>.getSupportedExtensions():</span></p>
+                <ul>{this.state.supportedExtensions && this.state.supportedExtensions.length > 0 ? this.state.supportedExtensions.map((item, index) => ( <li style={{ fontSize: "12px" }} key={index}>{item.cip}</li>)) : <li>No supported extensions found.</li>}</ul>
                 <h3>CIP-30 Full API</h3>
                 <p><span style={{fontWeight: "bold"}}>Network Id (0 = testnet; 1 = mainnet): </span>{this.state.networkId}</p>
                 <p><span style={{fontWeight: "bold"}}>.getUTxOs(): </span>{this.state.Utxos?.map(x => <li style={{fontSize: "10px"}} key={`${x.str}${x.multiAssetStr}`}>{`${x.str}${x.multiAssetStr}`}</li>)}</p>
@@ -1362,18 +1116,18 @@ export default class App extends React.Component
                 <p><span style={{fontWeight: "bold"}}>.getChangeAddress(): </span>{this.state.changeAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>.getRewardsAddress(): </span>{this.state.rewardAddress}</p>
                 <p><span style={{fontWeight: "bold"}}>.getUsedAddresses(): </span>{this.state.usedAddress}</p>
-                <p><span style={{ fontWeight: "bold" }}>.getExtensions():</span><ul>{this.state.enabledExtensions && !(this.state.enabledExtensions === "")  ? (this.state.enabledExtensions.map((x) => (<li style={{ fontSize: "12px" }} key={x.cip}>{x.cip}</li>))) : (<li>No extensions enabled.</li>)}</ul></p>
-
+                <p><span style={{ fontWeight: "bold" }}>.getExtensions():</span></p>
+                <ul>{this.state.enabledExtensions && this.state.enabledExtensions.length > 0 ? this.state.enabledExtensions.map((item, index) => ( <li style={{ fontSize: "12px" }} key={index}>{item.cip}</li>)) : <li>No extensions enabled.</li>}</ul>
                 <hr style={{marginTop: "40px", marginBottom: "10px"}}/>
                 <h1>CIP-95 🤠</h1>
-                {/* DRep Key Endpoints */}
                 <p><span style={{fontWeight: "bold"}}>.cip95.getPubDRepKey(): </span>{this.state.dRepKey}</p>
-                <p><span style={{fontWeight: "lighter"}}>Hex DRep ID (Key digest): </span>{this.state.dRepID}</p>
-                <p><span style={{fontWeight: "lighter"}}>Bech32 DRep ID (Key digest): </span>{this.state.dRepIDBech32}</p>
-                {/* Stake Key Endpoints */}
-                <p><span style={{ fontWeight: "bold" }}>.cip95.getRegisteredPubStakeKeys():</span><ul>{this.state.regStakeKeys && this.state.regStakeKeys.length > 0  ? (this.state.regStakeKeys.map((item, index) => (<li style={{ fontSize: "12px" }} key={index}>{item}</li>))) : (<li>No registered public stake keys returned.</li>)}</ul></p>
+                <p><span style={{fontWeight: "lighter"}}>Hex DRep ID (Pub DRep Key hash): </span>{this.state.dRepID}</p>
+                <p><span style={{fontWeight: "lighter"}}>Bech32 DRep ID (Pub DRep Key hash): </span>{this.state.dRepIDBech32}</p>
+                <p><span style={{ fontWeight: "bold" }}>.cip95.getRegisteredPubStakeKeys():</span></p>
+                <ul>{this.state.regStakeKeys && this.state.regStakeKeys.length > 0 ? this.state.regStakeKeys.map((item, index) => ( <li style={{ fontSize: "12px" }} key={index}>{item}</li>)) : <li>No registered public stake keys returned.</li>}</ul>
                 <p><span style={{fontWeight: "lighter"}}> First registered Stake Key Hash (hex): </span>{this.state.regStakeKeyHashHex}</p>
-                <p><span style={{ fontWeight: "bold" }}>.cip95.getUnregisteredPubStakeKeys():</span><ul>{this.state.unregStakeKeys && this.state.unregStakeKeys.length > 0  ? (this.state.unregStakeKeys.map((item, index) => (<li style={{ fontSize: "12px" }} key={index}>{item}</li>))) : (<li>No unregistered public stake keys returned.</li>)}</ul></p>
+                <p><span style={{ fontWeight: "bold" }}>.cip95.getUnregisteredPubStakeKeys():</span></p>
+                <ul>{this.state.regStakeKeys && this.state.unregStakeKeys.length > 0 ? this.state.unregStakeKeys.map((item, index) => ( <li style={{ fontSize: "12px" }} key={index}>{item}</li>)) : <li>No unregistered public stake keys returned.</li>}</ul>
                 <p><span style={{fontWeight: "lighter"}}> First unregistered Stake Key Hash (hex): </span>{this.state.unregStakeKeyHashHex}</p>
                 
                 <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
@@ -1394,12 +1148,35 @@ export default class App extends React.Component
                                     value={this.state.voteDelegationTarget}
                                 />
                             </FormGroup>
+                            <FormGroup
+                                label="Stake Credential:"
+                                helperText="(Bech32 or Hex encoded)"
+                            >
+                                <InputGroup
+                                    disabled={false}
+                                    leftIcon="id-number"
+                                    onChange={(event) => this.setState({voteDelegationStakeCred: event.target.value})}
+                                    value={this.state.voteDelegationStakeCred}
+                                />
+                            </FormGroup>
 
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildVoteDelegationCert({dRep: this.state.voteDelegationTarget}))}>Build, .signTx() and .submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildVoteDelegationCert())}>Build, .signTx() and .submitTx()</button>
                         </div>
                     } />
                     <Tab id="2" title="👷‍♂️ DRep Registration" panel={
                         <div style={{marginLeft: "20px"}}>
+
+                            <FormGroup
+                                label="DRep ID:"
+                                helperText="(Bech32 or Hex encoded)"
+                            >
+                                <InputGroup
+                                    disabled={false}
+                                    leftIcon="id-number"
+                                    onChange={(event) => this.setState({dRepRegTarget: event.target.value})}
+                                    value={this.state.dRepRegTarget}
+                                />
+                            </FormGroup>
 
                             <FormGroup
                                 helperText=""
@@ -1853,3 +1630,5 @@ export default class App extends React.Component
         )
     }
 }
+
+export default App;
