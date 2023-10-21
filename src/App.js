@@ -1,5 +1,5 @@
 import React from 'react'
-import { Tab, Tabs, RadioGroup, Radio, FormGroup, InputGroup } from "@blueprintjs/core";
+import { Tab, Tabs, RadioGroup, Radio, FormGroup, InputGroup, Utils } from "@blueprintjs/core";
 import "../node_modules/@blueprintjs/core/lib/css/blueprint.css";
 import "../node_modules/@blueprintjs/icons/lib/css/blueprint-icons.css";
 import "../node_modules/normalize.css/normalize.css";
@@ -55,6 +55,8 @@ import {
     ProtocolVersion,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
+import {buildStakeKeyRegCert} from './utils.js';
+
 let Buffer = require('buffer/').Buffer
 
 class App extends React.Component {
@@ -681,17 +683,16 @@ class App extends React.Component {
         }
     }
 
-    buildStakeKeyRegCert = async () => {
-        try {
-            const certBuilder = CertificatesBuilder.new();
-            const stakeKeyHash = Ed25519KeyHash.from_hex(this.state.stakeKeyReg);
-            const stakeKeyRegCert = StakeRegistration.new(Credential.from_keyhash(stakeKeyHash));
-            // Add cert to txbuilder
-            certBuilder.add(Certificate.new_stake_registration(stakeKeyRegCert));
-            this.setState({certBuilder : certBuilder});
+    addStakeRegCert = async () => {
+        const certBuilder = CertificatesBuilder.new();
+        const certBuilderWithStakeReg = buildStakeKeyRegCert(
+            certBuilder, 
+            this.state.stakeKeyReg
+        );
+        if (certBuilderWithStakeReg){
+            this.setState({certBuilder : certBuilderWithStakeReg});
             return true;
-        } catch (err) {
-            console.log(err);
+        }else{
             return false;
         }
     }
@@ -749,7 +750,7 @@ class App extends React.Component {
             const cred = Credential.from_keyhash(keyHash);
             return cred;
           } catch (err2) {
-            console.error('Error in parsing credential, not Hex or Bech32:', err1, err2);
+            console.log('Error in parsing credential, not Hex or Bech32:', err1, err2);
             return null;
           }
         }
@@ -1585,7 +1586,7 @@ class App extends React.Component {
                                     value={this.state.stakeKeyReg}
                                 />
                             </FormGroup>
-                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.buildStakeKeyRegCert()) }>Build, .signTx() and .submitTx()</button>
+                            <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(this.addStakeRegCert()) }>Build, .signTx() and .submitTx()</button>
 
                         </div>
                     } />
