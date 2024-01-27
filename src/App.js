@@ -122,6 +122,7 @@ class App extends React.Component {
             certBuilder: undefined,
             votingBuilder: undefined,
             govActionBuilder: undefined,
+            treasuryDonationAmount: undefined,
             // Certs
             voteDelegationTarget: "",
             voteDelegationStakeCred: "",
@@ -144,7 +145,7 @@ class App extends React.Component {
             constURL: "",
             constHash: "",
             treasuryTarget: "",
-            treasuryAmount: "",
+            treasuryDonationAmount: undefined,
             hardForkUpdateMajor: "",
             hardForkUpdateMinor: "",
             committeeAdd: undefined,
@@ -439,6 +440,7 @@ class App extends React.Component {
             certBuilder: undefined,
             votingBuilder: undefined,
             govActionBuilder: undefined,
+            treasuryDonationAmount: undefined,
             // Certs
             voteDelegationTarget: "",
             voteDelegationStakeCred: "",
@@ -461,7 +463,7 @@ class App extends React.Component {
             constURL: "",
             constHash: "",
             treasuryTarget: "",
-            treasuryAmount: "",
+            treasuryDonationAmount: "",
             hardForkUpdateMajor: "",
             hardForkUpdateMinor: "",
             committeeAdd: undefined,
@@ -670,6 +672,7 @@ class App extends React.Component {
         }
     }
 
+    // ew! who wrote this?
     resetSomeState = async () => { 
         this.setState({cip95ResultTx : ""});
         this.setState({cip95ResultHash : ""});
@@ -750,7 +753,7 @@ class App extends React.Component {
             }
             // Initialize builder with protocol parameters
             const txBuilder = await this.initTransactionBuilder();
-            // Add certs, votes or gov actions to the transaction
+            // Add certs, votes, gov actions or donation to the transaction
             if (this.state.certBuilder){
                 txBuilder.set_certs_builder(this.state.certBuilder);
                 this.setState({certBuilder : undefined});
@@ -762,6 +765,9 @@ class App extends React.Component {
             if (this.state.govActionBuilder){
                 txBuilder.set_voting_proposal_builder(this.state.govActionBuilder);
                 this.setState({govActionBuilder : undefined});
+            }
+            if (this.state.treasuryDonationAmount){
+                txBuilder.set_donation(BigNum.from_str(this.state.treasuryDonationAmount));
             }
             
             // Set output and change addresses to those of our wallet
@@ -1244,7 +1250,7 @@ class App extends React.Component {
         try {
             // take inputs
             const treasuryTarget = RewardAddress.from_address(Address.from_bech32(this.state.treasuryTarget));
-            const myWithdrawal = BigNum.from_str(this.state.treasuryAmount);
+            const myWithdrawal = BigNum.from_str(this.state.treasuryDonationAmount);
             const withdrawals = (TreasuryWithdrawals.new())
             withdrawals.insert(treasuryTarget, myWithdrawal)
             // Create new treasury withdrawal gov act
@@ -2084,7 +2090,7 @@ class App extends React.Component {
                                     <InputGroup
                                         disabled={false}
                                         leftIcon="id-number"
-                                        onChange={(event) => this.setState({treasuryAmount: event.target.value})}
+                                        onChange={(event) => this.setState({treasuryDonationAmount: event.target.value})}
                                     />
                                 </FormGroup>
 
@@ -2496,7 +2502,25 @@ class App extends React.Component {
                                 <button style={{padding: "10px"}} onClick={ () => this.addStakeKeyUnregCert() }>Build cert, add to Tx</button>
                             </div>
                         } />
-                        <Tab id="3" title=" 💯 Test Basic Transaction" panel={
+                        <Tab id="3" title="🤑 Treasury Donation" panel={
+                            <div style={{marginLeft: "20px"}}>
+
+                                <FormGroup
+                                    helperText="(lovelace)"
+                                    label="Donation amount"
+                                    style={{ paddingTop: "10px" }}
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({treasuryDonationAmount : event.target.value})}
+                                        value={this.state.treasuryDonationAmount}
+                                    />
+                                </FormGroup>
+
+                            </div>
+                        } />
+                        <Tab id="4" title=" 💯 Test Basic Transaction" panel={
                             <div style={{marginLeft: "20px"}}>
 
                                 <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(true) }>Build cert, add to Tx</button>
@@ -2510,7 +2534,13 @@ class App extends React.Component {
                 <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
                 <p><span style={{fontWeight: "bold"}}>Contents of transaction: </span></p>
                 <ul>{this.state.govActsInTx.concat(this.state.certsInTx.concat(this.state.votesInTx)).length > 0 ? this.state.govActsInTx.concat(this.state.certsInTx.concat(this.state.votesInTx)).map((item, index) => ( <li style={{ fontSize: "12px" }} key={index}>{item}</li>)) : <li>No certificates, votes or gov actions in transaction.</li>}</ul>
-
+                
+                {this.state.treasuryDonationAmount && (
+                    <>
+                    <p><span style={{fontWeight: "lighter"}}> Treasury Donation Amount: </span>{this.state.treasuryDonationAmount}</p>
+                    </>
+                )}
+                
                 <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(true) }>.signTx() and .submitTx()</button>
                 <button style={{padding: "10px"}} onClick={this.refreshData}>Refresh</button> 
 
