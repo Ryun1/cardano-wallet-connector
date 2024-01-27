@@ -152,6 +152,8 @@ class App extends React.Component {
             committeeRemove: undefined,
             committeeQuorum: undefined,
             govActDeposit: "1000000000",
+            govActPrevActionHash: undefined,
+            govActPrevActionIndex: undefined,
         }
 
         /**
@@ -467,6 +469,8 @@ class App extends React.Component {
             committeeRemove: undefined,
             committeeQuorum: undefined,
             govActDeposit: "1000000000",
+            govActPrevActionHash: undefined,
+            govActPrevActionIndex: undefined,
         });
     }
 
@@ -1183,7 +1187,13 @@ class App extends React.Component {
             const constDataHash = AnchorDataHash.from_hex(this.state.constHash);
             const constAnchor = Anchor.new(constURL, constDataHash);
             // Create new constitution governance action
-            const constChange = NewConstitutionAction.new(Constitution.new(constAnchor));
+            let constChange;
+            if (this.state.govActPrevActionHash && this.state.govActPrevActionIndex){
+                const prevActionId = GovernanceActionId.new(TransactionHash.from_hex(this.state.govActPrevActionHash), this.state.govActPrevActionIndex);
+                constChange = NewConstitutionAction.new_with_action_id(prevActionId, Constitution.new(constAnchor), prevActionId);
+            } else {
+                constChange = NewConstitutionAction.new(Constitution.new(constAnchor));
+            }
             const constChangeGovAct = GovernanceAction.new_new_constitution_action(constChange);
             // Create anchor and then reset state
             const anchorURL = URL.new(this.state.cip95MetadataURL);
@@ -1264,7 +1274,7 @@ class App extends React.Component {
         try {
             // Create new committee quorum threshold
             let threshold = UnitInterval.new(BigNum.from_str("1"), BigNum.from_str("2"));
-            if(this.state.committeeQuorum){
+            if (this.state.committeeQuorum){
                 threshold = UnitInterval.new(BigNum.from_str("1"), BigNum.from_str(this.state.committeeQuorum));
             }
     
@@ -1282,7 +1292,13 @@ class App extends React.Component {
                 removeCred = Credentials.new()
             }
 
-            const updateComAction = UpdateCommitteeAction.new(newCommittee, removeCred);
+            let updateComAction;
+            if (this.state.govActPrevActionHash && this.state.govActPrevActionIndex){
+                const prevActionId = GovernanceActionId.new(TransactionHash.from_hex(this.state.govActPrevActionHash), this.state.govActPrevActionIndex);
+                updateComAction = UpdateCommitteeAction.new_with_action_id(prevActionId, newCommittee, removeCred);
+            } else {
+                updateComAction = UpdateCommitteeAction.new(newCommittee, removeCred);
+            }
             const updateComGovAct = GovernanceAction.new_new_committee_action(updateComAction);
 
             // Create anchor and then reset state
@@ -1308,7 +1324,14 @@ class App extends React.Component {
         console.log("Adding Motion of No Confidence Gov Act to transaction")
         try {
             // Create motion of no confidence gov action
-            const noConfidenceAction = NoConfidenceAction.new();
+
+            let noConfidenceAction;
+            if (this.state.govActPrevActionHash && this.state.govActPrevActionIndex){
+                const prevActionId = GovernanceActionId.new(TransactionHash.from_hex(this.state.govActPrevActionHash), this.state.govActPrevActionIndex);
+                noConfidenceAction = NoConfidenceAction.new_with_action_id(prevActionId);
+            } else {
+                noConfidenceAction = NoConfidenceAction.new();
+            }
             const noConfidenceGovAct = GovernanceAction.new_no_confidence_action(noConfidenceAction);
             // Create anchor and then reset state
             const anchorURL = URL.new(this.state.cip95MetadataURL);
@@ -1336,7 +1359,13 @@ class App extends React.Component {
             const protocolParmUpdate = ProtocolParamUpdate.new();
             protocolParmUpdate.set_key_deposit(BigNum.from_str("0"));
             // Create param change gov action
-            const parameterChangeAction = ParameterChangeAction.new(protocolParmUpdate);
+            let parameterChangeAction;
+            if (this.state.govActPrevActionHash && this.state.govActPrevActionIndex){
+                const prevActionId = GovernanceActionId.new(TransactionHash.from_hex(this.state.govActPrevActionHash), this.state.govActPrevActionIndex);
+                parameterChangeAction = ParameterChangeAction.new_with_action_id(prevActionId, protocolParmUpdate);
+            } else {
+                parameterChangeAction = ParameterChangeAction.new(protocolParmUpdate);
+            }
             const parameterChangeGovAct = GovernanceAction.new_parameter_change_action(parameterChangeAction);
             // Create anchor and then reset state
             const anchorURL = URL.new(this.state.cip95MetadataURL);
@@ -1360,9 +1389,15 @@ class App extends React.Component {
         let govActionBuilder = await this.getGovActionBuilder();
         console.log("Adding Protocol Param Change Gov Act to transaction")
         try {
-            const nextProtocolVerion = ProtocolVersion.new(this.state.hardForkUpdateMajor, this.state.hardForkUpdateMinor);
+            const nextProtocolVersion = ProtocolVersion.new(this.state.hardForkUpdateMajor, this.state.hardForkUpdateMinor);
             // Create HF Initiation Action
-            const hardForkInitiationAction = HardForkInitiationAction.new(nextProtocolVerion);
+            let hardForkInitiationAction;
+            if (this.state.govActPrevActionHash && this.state.govActPrevActionIndex){
+                const prevActionId = GovernanceActionId.new(TransactionHash.from_hex(this.state.govActPrevActionHash), this.state.govActPrevActionIndex);
+                hardForkInitiationAction = HardForkInitiationAction.new_with_action_id(prevActionId, nextProtocolVersion);
+            } else {
+                hardForkInitiationAction = HardForkInitiationAction.new(nextProtocolVersion);
+            }
             const hardForkInitiationGovAct = GovernanceAction.new_hard_fork_initiation_action(hardForkInitiationAction);
             // Create anchor and then reset state
             const anchorURL = URL.new(this.state.cip95MetadataURL);
@@ -1706,7 +1741,6 @@ class App extends React.Component {
                                 </FormGroup>
 
                                 <FormGroup
-                                    helperText=""
                                     label="Metadata Hash"
                                 >
                                     <InputGroup
@@ -1715,6 +1749,29 @@ class App extends React.Component {
                                         onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
                                     />
                                 </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted no-confidence action tx hash"
+                                    helperText="Required if there has been a no-confidence action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted no-confidence action tx index"
+                                    helperText="Required if there has been a no-confidence action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
+                                    />
+                                </FormGroup>
+
                                 <button style={{padding: "10px"}} onClick={ () => this.buildMotionOfNoConfidenceAction() }>Build cert, add to Tx</button>
 
                             </div>
@@ -1786,6 +1843,29 @@ class App extends React.Component {
                                         onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
                                     />
                                 </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted update committee action tx hash"
+                                    helperText="Required if there has been a update committee action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted update committee action tx index"
+                                    helperText="Required if there has been a update committee action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
+                                    />
+                                </FormGroup>
+
                                 <button style={{padding: "10px"}} onClick={ () => this.buildUpdateCommitteeGovAct() }>Build cert, add to Tx</button>
 
                             </div>
@@ -1834,6 +1914,29 @@ class App extends React.Component {
                                         onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
                                     />
                                 </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted update constitution action tx hash"
+                                    helperText="Required if there has been a update constitution action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted update constitution action tx index"
+                                    helperText="Required if there has been a update constitution action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
+                                    />
+                                </FormGroup>
+
                                 <button style={{padding: "10px"}} onClick={ () => this.buildNewConstGovAct() }>Build cert, add to Tx</button>
 
                             </div>
@@ -1884,6 +1987,29 @@ class App extends React.Component {
                                         onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
                                     />
                                 </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted hardfork action tx hash"
+                                    helperText="Required if there has been a hardfork action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted hardfork action tx index"
+                                    helperText="Required if there has been a hardfork action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
+                                    />
+                                </FormGroup>
+
                                 <button style={{padding: "10px"}} onClick={ () => this.buildHardForkAction() }>Build cert, add to Tx</button>
 
                             </div>
@@ -1912,6 +2038,29 @@ class App extends React.Component {
                                         onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
                                     />
                                 </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted update parameter action tx hash"
+                                    helperText="Required if there has been a update parameter action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted update parameter action tx index"
+                                    helperText="Required if there has been a update parameter action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
+                                    />
+                                </FormGroup>
+
                                 <button style={{padding: "10px"}} onClick={ () => this.buildProtocolParamAction() }>Build cert, add to Tx</button>
 
                             </div>
