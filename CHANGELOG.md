@@ -1,5 +1,12 @@
 # Tags
 
+### 1.6.4
+- Added Treasury donations
+- Added Treasury values
+- Fixed linking previous governance actions
+- Added MIR certificate
+- Added genesis certificate
+
 ### 1.6.3
 - Fixed combination certs
 - Added CC certs
