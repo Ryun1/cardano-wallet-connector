@@ -125,6 +125,7 @@ class App extends React.Component {
             votingBuilder: undefined,
             govActionBuilder: undefined,
             treasuryDonationAmount: undefined,
+            treasuryValueAmount: undefined,
             // Certs
             voteDelegationTarget: "",
             voteDelegationStakeCred: "",
@@ -450,6 +451,7 @@ class App extends React.Component {
             votingBuilder: undefined,
             govActionBuilder: undefined,
             treasuryDonationAmount: undefined,
+            treasuryValueAmount: undefined,
             // Certs
             voteDelegationTarget: "",
             voteDelegationStakeCred: "",
@@ -784,6 +786,9 @@ class App extends React.Component {
             }
             if (this.state.treasuryDonationAmount){
                 txBuilder.set_donation(BigNum.from_str(this.state.treasuryDonationAmount));
+            }
+            if (this.state.treasuryValueAmount){
+                txBuilder.set_current_treasury_value(BigNum.from_str(this.state.treasuryValueAmount));
             }
             
             // Set output and change addresses to those of our wallet
@@ -2556,7 +2561,7 @@ class App extends React.Component {
                                 <button style={{padding: "10px"}} onClick={ () => this.addStakeKeyUnregCert() }>Build cert, add to Tx</button>
                             </div>
                         } />
-                        <Tab id="3" title="🤑 Treasury Donation" panel={
+                        <Tab id="3" title="🤑 Treasury Donation (TxBody)" panel={
                             <div style={{marginLeft: "20px"}}>
 
                                 <FormGroup
@@ -2574,7 +2579,25 @@ class App extends React.Component {
 
                             </div>
                         } />
-                        <Tab id="4" title="💸 MIR Transfer (depricated in Conway)" panel={
+                        <Tab id="4" title="🏧 Current Treasury Value (TxBody)" panel={
+                            <div style={{marginLeft: "20px"}}>
+
+                                <FormGroup
+                                    helperText="(lovelace)"
+                                    label="Current Treasury Value"
+                                    style={{ paddingTop: "10px" }}
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({treasuryValueAmount : event.target.value})}
+                                        value={this.state.treasuryValueAmount}
+                                    />
+                                </FormGroup>
+
+                            </div>
+                        } />
+                        <Tab id="5" title="💸 MIR Transfer (depricated in Conway)" panel={
                             <div style={{marginLeft: "20px"}}>
 
                                 <FormGroup
@@ -2621,7 +2644,7 @@ class App extends React.Component {
                             </div>
                         } />
 
-                        <Tab id="5" title="🧬 Genesis Delegation Certificate (depricated in Conway)" panel={
+                        <Tab id="6" title="🧬 Genesis Delegation Certificate (depricated in Conway)" panel={
                             <div style={{marginLeft: "20px"}}>
 
                                 <FormGroup
@@ -2668,10 +2691,10 @@ class App extends React.Component {
                             </div>
                         } />
 
-                        <Tab id="6" title=" 💯 Test Basic Transaction" panel={
+                        <Tab id="7" title=" 💯 Test Basic Transaction" panel={
                             <div style={{marginLeft: "20px"}}>
 
-                                <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(true) }>Build cert, add to Tx</button>
+                                <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(true) }>Build empty Tx</button>
 
                             </div>
                         } />
@@ -2686,6 +2709,12 @@ class App extends React.Component {
                 {this.state.treasuryDonationAmount && (
                     <>
                     <p><span style={{fontWeight: "lighter"}}> Treasury Donation Amount: </span>{this.state.treasuryDonationAmount}</p>
+                    </>
+                )}
+
+                {this.state.treasuryValueAmount && (
+                    <>
+                    <p><span style={{fontWeight: "lighter"}}> Treasury Value: </span>{this.state.treasuryValueAmount}</p>
                     </>
                 )}
                 
