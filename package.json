@@ -1,7 +1,7 @@
 {
     "homepage": "http://ryun1.github.io/cip95-cardano-wallet-connector",
     "name": "cardano-wallet-connector",
-    "version": "1.6.4",
+    "version": "1.7.0",
     "private": true,
     "dependencies": {
         "@blueprintjs/core": "^3.53.0",
