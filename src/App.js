@@ -62,6 +62,8 @@ import {
     buildStakeRegStakeVoteDelegCert,
     buildAuthorizeHotCredCert,
     buildResignColdCredCert,
+    buildMIRCert,
+    buildGenesisKeyDelegationCert,
 } from './utils.js';
 
 let Buffer = require('buffer/').Buffer
@@ -136,6 +138,13 @@ class App extends React.Component {
             stakeKeyWithCoin: false,
             stakeKeyUnreg: "",
             totalRefunds: undefined,
+            // Deprecated Certs
+            mirStakeCred: undefined,
+            mirAmount: undefined,
+            mirPot: undefined,
+            genesisHash: undefined,
+            genesisDelegationHash: undefined,
+            vrfKeyHash: undefined,
             // Combo certs
             comboPoolHash: "",
             comboStakeCred: "",
@@ -145,7 +154,7 @@ class App extends React.Component {
             constURL: "",
             constHash: "",
             treasuryTarget: "",
-            treasuryDonationAmount: undefined,
+            treasuryWithdrawalAmount: undefined,
             hardForkUpdateMajor: "",
             hardForkUpdateMinor: "",
             committeeAdd: undefined,
@@ -454,6 +463,13 @@ class App extends React.Component {
             stakeKeyWithCoin: false,
             stakeKeyUnreg: "",
             totalRefunds: undefined,
+            // Deprecated Certs
+            mirStakeCred: undefined,
+            mirAmount: undefined,
+            mirPot: undefined,
+            genesisHash: undefined,
+            genesisDelegationHash: undefined,
+            vrfKeyHash: undefined,
             // Combo certs
             comboPoolHash: "",
             comboStakeCred: "",
@@ -463,7 +479,7 @@ class App extends React.Component {
             constURL: "",
             constHash: "",
             treasuryTarget: "",
-            treasuryDonationAmount: "",
+            treasuryWithdrawalAmount: "",
             hardForkUpdateMajor: "",
             hardForkUpdateMinor: "",
             committeeAdd: undefined,
@@ -825,11 +841,11 @@ class App extends React.Component {
             this.resetSomeState();
 
             if (await this.submitConwayTx(signedTx)){
-                 // Reset  state
+                // Reset  state
                 this.setState({cip95MetadataURL : undefined});
                 this.setState({cip95MetadataHash : undefined});
                 this.setState({totalRefunds : undefined});
-            } else{
+            } else {
                 throw "Error during submission of transaction"
             }
         } catch (err) {
@@ -1026,6 +1042,44 @@ class App extends React.Component {
         }
         if (certBuilderWithResignColdCredCert){
             await this.setCertBuilder(certBuilderWithResignColdCredCert)
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    addMIRCert = async () => {
+        let certBuilder = await this.getCertBuilder();
+        console.log("Adding MIR cert to transaction")
+        
+        const certBuilderWithMIRCert = buildMIRCert(
+            certBuilder, 
+            this.state.mirStakeCred,
+            this.state.mirAmount,
+            this.state.mirPot
+        );
+
+        if (certBuilderWithMIRCert){
+            await this.setCertBuilder(certBuilderWithMIRCert)
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    addGenesisDelegationCert = async () => {
+        let certBuilder = await this.getCertBuilder();
+        console.log("Adding genesis delegation to transaction")
+        
+        const certBuilderWithGenesisDelegationCert = buildGenesisKeyDelegationCert(
+            certBuilder, 
+            this.state.genesisHash,
+            this.state.genesisDelegationHash,
+            this.state.vrfKeyHash
+        );
+
+        if (certBuilderWithGenesisDelegationCert){
+            await this.setCertBuilder(certBuilderWithGenesisDelegationCert)
             return true;
         } else {
             return false;
@@ -1250,7 +1304,7 @@ class App extends React.Component {
         try {
             // take inputs
             const treasuryTarget = RewardAddress.from_address(Address.from_bech32(this.state.treasuryTarget));
-            const myWithdrawal = BigNum.from_str(this.state.treasuryDonationAmount);
+            const myWithdrawal = BigNum.from_str(this.state.treasuryWithdrawalAmount);
             const withdrawals = (TreasuryWithdrawals.new())
             withdrawals.insert(treasuryTarget, myWithdrawal)
             // Create new treasury withdrawal gov act
@@ -2090,7 +2144,7 @@ class App extends React.Component {
                                     <InputGroup
                                         disabled={false}
                                         leftIcon="id-number"
-                                        onChange={(event) => this.setState({treasuryDonationAmount: event.target.value})}
+                                        onChange={(event) => this.setState({treasuryWithdrawalAmount: event.target.value})}
                                     />
                                 </FormGroup>
 
@@ -2520,7 +2574,101 @@ class App extends React.Component {
 
                             </div>
                         } />
-                        <Tab id="4" title=" 💯 Test Basic Transaction" panel={
+                        <Tab id="4" title="💸 MIR Transfer (depricated in Conway)" panel={
+                            <div style={{marginLeft: "20px"}}>
+
+                                <FormGroup
+                                    helperText="Hex key hash"
+                                    label="Recieving stake key Hash"
+                                    style={{ paddingTop: "10px" }}
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({mirStakeCred : event.target.value})}
+                                        defaultValue={this.state.mirStakeCred}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    helperText="(Lovelace)"
+                                    label="MIR Delta Amount"
+                                    style={{ paddingTop: "10px" }}
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({mirAmount : event.target.value})}
+                                        defaultValue={this.state.mirAmount}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    helperText="0 for the reserve, 1 for treasury."
+                                    label="MIR Pot Number"
+                                    style={{ paddingTop: "10px" }}
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({mirPot : event.target.value})}
+                                        defaultValue={this.state.mirPot}
+                                    />
+                                </FormGroup>
+
+                                <button style={{padding: "10px"}} onClick={ () => this.addMIRCert() }>Build cert, add to Tx</button>
+
+                            </div>
+                        } />
+
+                        <Tab id="5" title="🧬 Genesis Delegation Certificate (depricated in Conway)" panel={
+                            <div style={{marginLeft: "20px"}}>
+
+                                <FormGroup
+                                    helperText="(Hex, 56 chars)"
+                                    label="Genesis Hash"
+                                    style={{ paddingTop: "10px" }}
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({genesisHash : event.target.value})}
+                                        value={this.state.genesisHash}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    helperText="(Hex, 56 chars)"
+                                    label="Gensis Delegation Hash"
+                                    style={{ paddingTop: "10px" }}
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({genesisDelegationHash : event.target.value})}
+                                        value={this.state.genesisDelegationHash}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    helperText="(Hex, 64 chars)"
+                                    label="VRF Keyhash"
+                                    style={{ paddingTop: "10px" }}
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({vrfKeyHash : event.target.value})}
+                                        value={this.state.vrfKeyHash}
+                                    />
+                                </FormGroup>
+
+                                <button style={{padding: "10px"}} onClick={ () => this.addGenesisDelegationCert() }>Build cert, add to Tx</button>
+
+                            </div>
+                        } />
+
+                        <Tab id="6" title=" 💯 Test Basic Transaction" panel={
                             <div style={{marginLeft: "20px"}}>
 
                                 <button style={{padding: "10px"}} onClick={ () => this.buildSubmitConwayTx(true) }>Build cert, add to Tx</button>
