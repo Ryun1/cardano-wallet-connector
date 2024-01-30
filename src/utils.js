@@ -15,6 +15,15 @@ import {
     StakeVoteRegistrationAndDelegation,
     CommitteeHotAuth,
     CommitteeColdResign,
+    MoveInstantaneousRewardsCert,
+    MoveInstantaneousReward,
+    MIRToStakeCredentials,
+    Int,
+    GenesisKeyDelegation,
+    GenesisHash,
+    GenesisDelegateHash,
+    VRFKeyHash,
+
 } from "@emurgo/cardano-serialization-lib-asmjs"
 
 // Helper functions
@@ -199,3 +208,39 @@ export function buildResignColdCredCert(certBuilder, coldCredential, anchorURL=u
         return null;
     }
 }
+
+// Deprecated Certs
+
+// Move Instantaneous Rewards Cert
+export function buildMIRCert(certBuilder, stakeCredential, deltaAmount="2000000", potNumber) {
+    try {
+        const mirCreds = MIRToStakeCredentials.new();
+        const delta = Int.new(BigNum.from_str(deltaAmount));
+        console.log("stakecred:", stakeCredential);
+        const credential = keyHashStringToCredential(stakeCredential);
+        mirCreds.insert(credential, delta);
+        const mir = MoveInstantaneousReward.new_to_stake_creds(potNumber, mirCreds);
+        const mirCert = MoveInstantaneousRewardsCert.new(mir);
+        certBuilder.add(Certificate.new_move_instantaneous_rewards_cert(mirCert));
+        return certBuilder;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
+// Genesis Key Delegation Cert
+export function buildGenesisKeyDelegationCert(certBuilder, genesisHashHex, genesisDelegateHashHex, vrfKeyHashHex) {
+    try {
+        const genesisHash = GenesisHash.from_hex(genesisHashHex);
+        const genesisDelegateHash = GenesisDelegateHash.from_hex(genesisDelegateHashHex);
+        const vrfKeyHash = VRFKeyHash.from_hex(vrfKeyHashHex);
+        const genesisCert = GenesisKeyDelegation.new(genesisHash, genesisDelegateHash, vrfKeyHash);
+        certBuilder.add(Certificate.new_genesis_key_delegation(genesisCert));
+        return certBuilder;
+    } catch (err) {
+        console.error(err);
+        return null;
+    }
+}
+
