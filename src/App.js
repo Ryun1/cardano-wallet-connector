@@ -767,7 +767,7 @@ class App extends React.Component {
         try {
             // Abort if error before building Tx
             if (!(await builderSuccess)){
-                throw "Error before building Tx, aborting Tx build."
+                throw new Error("Error before building Tx, aborting Tx build.")
             }
             // Initialize builder with protocol parameters
             const txBuilder = await this.initTransactionBuilder();
@@ -851,7 +851,7 @@ class App extends React.Component {
                 this.setState({cip95MetadataHash : undefined});
                 this.setState({totalRefunds : undefined});
             } else {
-                throw "Error during submission of transaction"
+                throw new Error("Error during submission of transaction")
             }
         } catch (err) {
             console.log("Error during build, sign and submit transaction");
