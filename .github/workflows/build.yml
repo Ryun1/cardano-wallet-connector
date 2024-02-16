@@ -1,5 +1,8 @@
 name: build test
 
+env: 
+  CI: false
+
 on: 
   pull_request:
     branches:
