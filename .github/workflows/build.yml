@@ -1,6 +1,6 @@
 name: build test
 
-env: 
+env:
   CI: false
 
 on: 
