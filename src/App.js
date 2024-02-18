@@ -91,6 +91,8 @@ class App extends React.Component {
             usedAddress: undefined,
             assetNameHex: "4c494645",
             // CIP-95 Stuff
+            signAndSubmitError: undefined,
+            buildingError: undefined,
             supportedExtensions: [],
             enabledExtensions: [],
             selected95BasicTabId: "1",
@@ -440,6 +442,8 @@ class App extends React.Component {
             regStakeKeyHashHex: undefined,
             unregStakeKeyHashHex: undefined,
             // Txs
+            signAndSubmitError: undefined,
+            buildingError: undefined,
             seeCombos: false,
             seeGovActs: false,
             seeMisc: false,
@@ -509,6 +513,7 @@ class App extends React.Component {
         try {
             const walletFound = this.checkIfWalletFound();
             this.resetSomeState();
+            this.refreshErrorState();
             // If wallet found and CIP-95 selected perform CIP-30 initial API calls
             if (walletFound) {
                 await this.getAPIVersion();
@@ -691,7 +696,9 @@ class App extends React.Component {
             const cred = Credential.from_keyhash(keyHash);
             return cred;
           } catch (err2) {
-            console.error('Error in parsing credential, not Hex or Bech32:', err1, err2);
+            console.error('Error in parsing credential, not Hex or Bech32:');
+            console.error(err1, err2);
+            this.setState({buildingError : {msg: 'Error in parsing credential, not Hex or Bech32', err: err2}});
             return null;
           }
         }
@@ -707,6 +714,11 @@ class App extends React.Component {
         this.setState({certBuilder : undefined});
         this.setState({votingBuilder : undefined});
         this.setState({govActionBuilder : undefined});
+    }
+
+    refreshErrorState = async () => { 
+        this.setState({buildingError : undefined});
+        this.setState({signAndSubmitError : undefined});
     }
 
     getCertBuilder = async () => {
@@ -772,6 +784,7 @@ class App extends React.Component {
 
     buildSubmitConwayTx = async (builderSuccess) => {
         try {
+            console.log("Building, signing and submitting transaction")
             // Abort if error before building Tx
             if (!(await builderSuccess)){
                 throw new Error("Error before building Tx, aborting Tx build.")
@@ -833,7 +846,7 @@ class App extends React.Component {
             // Ask wallet to to provide signature (witnesses) for the transaction
             let txVkeyWitnesses;
             // Log the CBOR of tx to console
-            console.log(Buffer.from(tx.to_bytes(), "utf8").toString("hex"));
+            console.log("UnsignedTx: ", Buffer.from(tx.to_bytes(), "utf8").toString("hex"));
             txVkeyWitnesses = await this.API.signTx(Buffer.from(tx.to_bytes(), "utf8").toString("hex"), true);
             // Create witness set object using the witnesses provided by the wallet
             txVkeyWitnesses = TransactionWitnessSet.from_bytes(Buffer.from(txVkeyWitnesses, "hex"));
@@ -845,7 +858,7 @@ class App extends React.Component {
             );
             
             console.log("SignedTx: ", Buffer.from(signedTx.to_bytes(), "utf8").toString("hex"))
-            // console.log("Signed Tx: ", signedTx.to_json());
+            //console.log("Signed Tx: ", signedTx.to_json());
 
             const cip95ResultWitness = Buffer.from(txVkeyWitnesses.to_bytes(), "utf8").toString("hex");
             this.setState({cip95ResultWitness});
@@ -858,12 +871,14 @@ class App extends React.Component {
                 this.setState({cip95MetadataHash : undefined});
                 this.setState({totalRefunds : undefined});
             } else {
+                this.setState({signAndSubmitError : String(cip95ResultWitness)})
                 throw new Error("Error during submission of transaction")
             }
         } catch (err) {
             console.log("Error during build, sign and submit transaction");
             console.log(err);
             await this.refreshData();
+            this.setState({signAndSubmitError : (err)})
         }
     }
 
@@ -879,11 +894,13 @@ class App extends React.Component {
         } catch (err) {
             console.log("Error during submission of transaction");
             console.log(err);
+            this.setState({signAndSubmitError : (err)})
             return false;
         }
     }
 
     addStakeKeyRegCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding stake registration cert to transaction")
         const certBuilderWithStakeReg = buildStakeKeyRegCert(
@@ -906,6 +923,7 @@ class App extends React.Component {
     }
 
     addStakeKeyUnregCert = async () => {
+        this.refreshErrorState();        
         let certBuilder = await this.getCertBuilder();
         console.log("Adding stake deregistraiton cert to transaction")
         const certBuilderWithStakeUnreg = buildStakeKeyUnregCert(
@@ -937,6 +955,7 @@ class App extends React.Component {
     }
 
     addStakeVoteDelegCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding vote delegation cert to transaction")
         const certBuilderWithStakeVoteDeleg = buildStakeVoteDelegCert(
@@ -954,6 +973,7 @@ class App extends React.Component {
     }
 
     addStakeRegDelegCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding (stake key reg and stake pool delegation) cert to transaction")
         const certBuilderWithStakeRegDelegCert = buildStakeRegDelegCert(
@@ -975,6 +995,7 @@ class App extends React.Component {
     }
 
     addStakeRegVoteDelegCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding (stake key reg and vote delegation) cert to transaction")
         const certBuilderWithStakeRegVoteDelegCert = buildStakeRegVoteDelegCert(
@@ -996,6 +1017,7 @@ class App extends React.Component {
     }
 
     addStakeRegStakeVoteDelegCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding (stake key reg, stake pool delegation and vote delegation) cert to transaction")
         const certBuilderWithStakeRegStakeVoteDelegCert = buildStakeRegStakeVoteDelegCert(
@@ -1018,6 +1040,7 @@ class App extends React.Component {
     }
 
     addAuthorizeHotCredCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding CC authorize hot credential cert to transaction")
         const certBuilderWithAuthorizeHotCredCert = buildAuthorizeHotCredCert(
@@ -1034,6 +1057,7 @@ class App extends React.Component {
     }
 
     addResignColdCredCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding CC resign cold credential cert to transaction")
 
@@ -1061,6 +1085,7 @@ class App extends React.Component {
     }
 
     addMIRCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding MIR cert to transaction")
         
@@ -1080,6 +1105,7 @@ class App extends React.Component {
     }
 
     addGenesisDelegationCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding genesis delegation to transaction")
         
@@ -1099,6 +1125,7 @@ class App extends React.Component {
     }
 
     buildVoteDelegationCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding vote delegation cert to transaction")
         try {
@@ -1120,12 +1147,15 @@ class App extends React.Component {
             await this.setCertBuilder(certBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildDRepRegCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding DRep Registration cert to transaction")
         try {
@@ -1153,12 +1183,15 @@ class App extends React.Component {
             await this.setCertBuilder(certBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildDRepUpdateCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding DRep Update cert to transaction")
         try {
@@ -1186,12 +1219,15 @@ class App extends React.Component {
             await this.setCertBuilder(certBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildDRepRetirementCert = async () => {
+        this.refreshErrorState();
         let certBuilder = await this.getCertBuilder();
         console.log("Adding DRep Retirement cert to transaction")
         try {
@@ -1207,12 +1243,15 @@ class App extends React.Component {
             await this.setCertBuilder(certBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildVote = async () => {
+        this.refreshErrorState();
         let votingBuilder = await this.getVotingBuilder();
         console.log("Adding DRep vote to transaction")
         try {
@@ -1245,12 +1284,15 @@ class App extends React.Component {
             await this.setVotingBuilder(votingBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildNewConstGovAct = async () => {
+        this.refreshErrorState();
         let govActionBuilder = await this.getGovActionBuilder();
         console.log("Adding New Constitution Gov Act to transaction")
         try {
@@ -1287,12 +1329,15 @@ class App extends React.Component {
             await this.setGovActionBuilder(govActionBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildNewInfoGovAct = async () => {
+        this.refreshErrorState();
         let govActionBuilder = await this.getGovActionBuilder();
         console.log("Adding New Constitution Gov Act to transaction")
         try {
@@ -1312,12 +1357,15 @@ class App extends React.Component {
             await this.setGovActionBuilder(govActionBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildTreasuryGovAct = async () => {
+        this.refreshErrorState();
         let govActionBuilder = await this.getGovActionBuilder();
         console.log("Adding Treasury Withdrawal Gov Act to transaction")
         try {
@@ -1348,12 +1396,15 @@ class App extends React.Component {
             await this.setGovActionBuilder(govActionBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildUpdateCommitteeGovAct = async () => {
+        this.refreshErrorState();
         let govActionBuilder = await this.getGovActionBuilder();
         console.log("Adding Update Committee Gov Act to transaction")
         try {
@@ -1399,12 +1450,15 @@ class App extends React.Component {
             await this.setGovActionBuilder(govActionBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildMotionOfNoConfidenceAction = async () => {
+        this.refreshErrorState();
         let govActionBuilder = await this.getGovActionBuilder();
         console.log("Adding Motion of No Confidence Gov Act to transaction")
         try {
@@ -1431,12 +1485,15 @@ class App extends React.Component {
             await this.setGovActionBuilder(govActionBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildProtocolParamAction = async () => {
+        this.refreshErrorState();
         let govActionBuilder = await this.getGovActionBuilder();
         console.log("Adding Protocol Param Change Gov Act to transaction")
         try {
@@ -1479,12 +1536,15 @@ class App extends React.Component {
             await this.setGovActionBuilder(govActionBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
     }
 
     buildHardForkAction = async () => {
+        this.refreshErrorState();
         let govActionBuilder = await this.getGovActionBuilder();
         console.log("Adding Protocol Param Change Gov Act to transaction")
         try {
@@ -1511,6 +1571,8 @@ class App extends React.Component {
             await this.setGovActionBuilder(govActionBuilder)
             return true;
         } catch (err) {
+            this.setState({buildingError : String(err)})
+            this.resetSomeState();
             console.log(err);
             return false;
         }
@@ -2633,8 +2695,34 @@ class App extends React.Component {
                 )}
                 <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
                 <p><span style={{fontWeight: "bold"}}>Contents of transaction: </span></p>
-                <ul>{this.state.govActsInTx.concat(this.state.certsInTx.concat(this.state.votesInTx)).length > 0 ? this.state.govActsInTx.concat(this.state.certsInTx.concat(this.state.votesInTx)).map((item, index) => ( <li style={{ fontSize: "12px" }} key={index}>{item}</li>)) : <li>No certificates, votes or gov actions in transaction.</li>}</ul>
-                
+
+                {!this.state.buildingError && !this.state.signAndSubmitError && (
+                    <ul>{this.state.govActsInTx.concat(this.state.certsInTx.concat(this.state.votesInTx)).length > 0 ? this.state.govActsInTx.concat(this.state.certsInTx.concat(this.state.votesInTx)).map((item, index) => ( <li style={{ fontSize: "12px" }} key={index}>{item}</li>)) : <li>No certificates, votes or gov actions in transaction.</li>}</ul>
+                )}
+                {[
+                    { title: "🚨 Error during building 🚨", error: this.state.buildingError },
+                    { title: "🚨 Error during sign and submit 🚨", error: this.state.signAndSubmitError }
+                ].map(({ title, error }, index) => (
+                    error && (
+                        <React.Fragment key={index}>
+                            <h5>{title}</h5>
+                            <div>
+                                {typeof error === 'object' && error !== null ? (
+                                    <ul>
+                                        {Object.entries(error).map(([key, value], i) => (
+                                            <li key={i}>
+                                                <strong>{key}:</strong> {typeof value === 'object' ? JSON.stringify(value) : value}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <p><span style={{ fontWeight: "bold" }}>{error}</span></p>
+                                )}
+                            </div>
+                        </React.Fragment>
+                    )
+                ))}
+
                 {this.state.treasuryDonationAmount && (
                     <>
                     <p><span style={{fontWeight: "lighter"}}> Treasury Donation Amount: </span>{this.state.treasuryDonationAmount}</p>
