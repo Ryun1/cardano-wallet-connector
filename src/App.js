@@ -165,6 +165,31 @@ class App extends React.Component {
             govActDeposit: "1000000000",
             govActPrevActionHash: undefined,
             govActPrevActionIndex: undefined,
+            // metadata
+            cip100Metadata: {
+                language: "en",
+                hashAlgorithm: "blake2b-256",
+                authors: [
+                    { 
+                        name: undefined,
+                        witness: {
+                            witnessAlgorithm: "ed25519",
+                            publicKey: undefined,
+                            signature: undefined
+                        }
+                    }
+                ],
+                body: {
+                    comment: undefined,
+                    references: [
+                        { 
+                            type: undefined,
+                            label: undefined,
+                            uri: undefined
+                        }
+                    ],
+                },
+            }
         }
 
         /**
