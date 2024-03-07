@@ -51,6 +51,7 @@ import {
     ProtocolParamUpdate,
     HardForkInitiationAction,
     ProtocolVersion,
+    ScriptHash,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 import {
@@ -165,6 +166,7 @@ class App extends React.Component {
             govActDeposit: "1000000000",
             govActPrevActionHash: undefined,
             govActPrevActionIndex: undefined,
+            proposalPolicy: undefined,
         }
 
         /**
@@ -491,6 +493,7 @@ class App extends React.Component {
             govActDeposit: "1000000000",
             govActPrevActionHash: undefined,
             govActPrevActionIndex: undefined,
+            proposalPolicy: undefined,
         });
     }
 
@@ -1251,13 +1254,20 @@ class App extends React.Component {
             const constURL = URL.new(this.state.constURL);
             const constDataHash = AnchorDataHash.from_hex(this.state.constHash);
             const constAnchor = Anchor.new(constURL, constDataHash);
+            // Add in proposal policy if provided
+            let constitution;
+            if (this.state.proposalPolicy) {
+                constitution = Constitution.new_with_script_hash(constAnchor, ScriptHash.from_hex(this.state.proposalPolicy));
+            } else {
+                constitution = Constitution.new(constAnchor);
+            }
             // Create new constitution governance action
             let constChange;
             if (this.state.govActPrevActionHash && this.state.govActPrevActionIndex){
                 const prevActionId = GovernanceActionId.new(TransactionHash.from_hex(this.state.govActPrevActionHash), this.state.govActPrevActionIndex);
-                constChange = NewConstitutionAction.new_with_action_id(prevActionId, Constitution.new(constAnchor), prevActionId);
+                constChange = NewConstitutionAction.new_with_action_id(prevActionId, constitution, prevActionId);
             } else {
-                constChange = NewConstitutionAction.new(Constitution.new(constAnchor));
+                constChange = NewConstitutionAction.new(constitution);
             }
             const constChangeGovAct = GovernanceAction.new_new_constitution_action(constChange);
             // Create anchor and then reset state
@@ -1313,7 +1323,13 @@ class App extends React.Component {
             const withdrawals = (TreasuryWithdrawals.new())
             withdrawals.insert(treasuryTarget, myWithdrawal)
             // Create new treasury withdrawal gov act
-            const treasuryAction = TreasuryWithdrawalsAction.new(withdrawals);
+            // if proposal policy
+            let treasuryAction;
+            if (this.state.proposalPolicy) {
+                treasuryAction = TreasuryWithdrawalsAction.new_with_policy_hash(withdrawals, ScriptHash.from_hex(this.state.proposalPolicy));
+            } else {
+                treasuryAction = TreasuryWithdrawalsAction.new(withdrawals);
+            }
             const treasuryGovAct = GovernanceAction.new_treasury_withdrawals_action(treasuryAction);
             // Create anchor and then reset state
             const anchorURL = URL.new(this.state.cip95MetadataURL);
@@ -1425,11 +1441,25 @@ class App extends React.Component {
             protocolParmUpdate.set_key_deposit(BigNum.from_str("0"));
             // Create param change gov action
             let parameterChangeAction;
-            if (this.state.govActPrevActionHash && this.state.govActPrevActionIndex){
+            // if prev action
+            if (this.state.govActPrevActionHash && this.state.govActPrevActionIndex) {
                 const prevActionId = GovernanceActionId.new(TransactionHash.from_hex(this.state.govActPrevActionHash), this.state.govActPrevActionIndex);
-                parameterChangeAction = ParameterChangeAction.new_with_action_id(prevActionId, protocolParmUpdate);
+                // if policy
+                if (this.state.proposalPolicy){
+                    parameterChangeAction = ParameterChangeAction.new_with_policy_hash_and_action_id(prevActionId, protocolParmUpdate, ScriptHash.from_hex(this.state.proposalPolicy));
+                // else no policy and just prev action
+                } else {
+                    parameterChangeAction = ParameterChangeAction.new_with_action_id(prevActionId, protocolParmUpdate);
+                }
+            // else no prev action
             } else {
-                parameterChangeAction = ParameterChangeAction.new(protocolParmUpdate);
+                // if policy and no prev action
+                if (this.state.proposalPolicy){
+                    parameterChangeAction = ParameterChangeAction.new_with_policy_hash(protocolParmUpdate, ScriptHash.from_hex(this.state.proposalPolicy));
+                } else {
+                // if no policy and no prev action
+                    parameterChangeAction = ParameterChangeAction.new(protocolParmUpdate);
+                }
             }
             const parameterChangeGovAct = GovernanceAction.new_parameter_change_action(parameterChangeAction);
             // Create anchor and then reset state
@@ -1790,30 +1820,30 @@ class App extends React.Component {
                         />
                     </FormGroup>
 
+                    <FormGroup
+                        label="Metadata URL"
+                        >
+                        <InputGroup
+                            disabled={false}
+                            leftIcon="id-number"
+                            onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
+                            defaultValue={this.state.cip95MetadataURL}
+                        />
+                    </FormGroup>
+
+                    <FormGroup
+                        label="Metadata Hash"
+                        >
+                        <InputGroup
+                            disabled={false}
+                            leftIcon="id-number"
+                            onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
+                        />
+                    </FormGroup>               
+
                     <Tabs id="cip95-actions" vertical={true} onChange={this.handle95TabId} selectedTab95Id={this.state.selected95ActionsTabId}>
                         <Tab id="1" title="💡 Governance Action: Motion of no-confidence" panel={
                             <div style={{marginLeft: "20px"}}>
-
-                                <FormGroup
-                                    label="Metadata URL"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                        defaultValue={this.state.cip95MetadataURL}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup
-                                    label="Metadata Hash"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    />
-                                </FormGroup>
 
                                 <FormGroup
                                     label="Optional: Previously enacted no-confidence action tx hash"
@@ -1823,17 +1853,6 @@ class App extends React.Component {
                                         disabled={false}
                                         leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup
-                                    label="Optional: Previously enacted no-confidence action tx index"
-                                    helperText="Required if there has been a no-confidence action enacted before"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
                                     />
                                 </FormGroup>
 
@@ -1888,28 +1907,6 @@ class App extends React.Component {
                                 </FormGroup>
 
                                 <FormGroup
-                                    label="Metadata URL"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                        defaultValue={this.state.cip95MetadataURL}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup
-                                    helperText=""
-                                    label="Metadata Hash"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup
                                     label="Optional: Previously enacted update committee action tx hash"
                                     helperText="Required if there has been a update committee action enacted before"
                                 >
@@ -1959,24 +1956,12 @@ class App extends React.Component {
                                 </FormGroup>
 
                                 <FormGroup
-                                    label="Metadata URL"
+                                    label="Optional: Proposal Policy Script hash"
                                 >
                                     <InputGroup
                                         disabled={false}
                                         leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                        defaultValue={this.state.cip95MetadataURL}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup
-                                    helperText=""
-                                    label="Metadata Hash"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
+                                        onChange={(event) => this.setState({proposalPolicy: event.target.value})}
                                     />
                                 </FormGroup>
 
@@ -2032,28 +2017,6 @@ class App extends React.Component {
                                 </FormGroup>
 
                                 <FormGroup
-                                    label="Metadata URL"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                        defaultValue={this.state.cip95MetadataURL}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup
-                                    helperText=""
-                                    label="Metadata Hash"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup
                                     label="Optional: Previously enacted hardfork action tx hash"
                                     helperText="Required if there has been a hardfork action enacted before"
                                 >
@@ -2083,28 +2046,6 @@ class App extends React.Component {
                             <div style={{marginLeft: "20px"}}>
 
                                 <FormGroup
-                                    label="Metadata URL"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                        defaultValue={this.state.cip95MetadataURL}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup
-                                    helperText=""
-                                    label="Metadata Hash"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup
                                     label="Optional: Previously enacted update parameter action tx hash"
                                     helperText="Required if there has been a update parameter action enacted before"
                                 >
@@ -2123,6 +2064,17 @@ class App extends React.Component {
                                         disabled={false}
                                         leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Proposal Policy Script hash"
+                                    helperText="Required if there has been a proposal policy voted in before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({proposalPolicy: event.target.value})}
                                     />
                                 </FormGroup>
 
@@ -2154,26 +2106,16 @@ class App extends React.Component {
                                 </FormGroup>
 
                                 <FormGroup
-                                    label="Metadata URL"
+                                    label="Optional: Proposal Policy Script hash"
+                                    helperText="Required if there has been a proposal policy voted in before"
                                 >
                                     <InputGroup
                                         disabled={false}
                                         leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                        defaultValue={this.state.cip95MetadataURL}
+                                        onChange={(event) => this.setState({proposalPolicy: event.target.value})}
                                     />
                                 </FormGroup>
 
-                                <FormGroup
-                                    helperText=""
-                                    label="Metadata Hash"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    />
-                                </FormGroup>
                                 <button style={{padding: "10px"}} onClick={ () => this.buildTreasuryGovAct() }>Build cert, add to Tx</button>
 
                             </div>
@@ -2181,27 +2123,6 @@ class App extends React.Component {
                         <Tab id="7" title="💡 Governance Action: Info action" panel={
                             <div style={{marginLeft: "20px"}}>
 
-                                <FormGroup
-                                    label="Metadata URL"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                                        defaultValue={this.state.cip95MetadataURL}
-                                    />
-                                </FormGroup>
-
-                                <FormGroup
-                                    helperText=""
-                                    label="Metadata Hash"
-                                >
-                                    <InputGroup
-                                        disabled={false}
-                                        leftIcon="id-number"
-                                        onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
-                                    />
-                                </FormGroup>
                                 <button style={{padding: "10px"}} onClick={ () => this.buildNewInfoGovAct() }>Build cert, add to Tx</button>
 
                             </div>
@@ -2731,7 +2652,7 @@ class App extends React.Component {
                 <p><span style={{fontWeight: "bold"}}>CborHex Tx: </span>{this.state.cip95ResultTx}</p>
                 <hr style={{marginTop: "2px", marginBottom: "10px"}}/>
                 
-                <h5>💖 Powered by CSL 12 alpha 16 💖</h5>
+                <h5>💖 Powered by CSL 12 alpha 19 💖</h5>
             </div>
         )
     }
