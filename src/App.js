@@ -153,6 +153,8 @@ class App extends React.Component {
             comboStakeRegCoin: "2000000",
             comboVoteDelegTarget: "",
             // Gov actions
+            gaMetadataURL: "https://raw.githubusercontent.com/Ryun1/metadata/main/cip100/ga.jsonld",
+            gaMetadataHash: "d57d30d2d03298027fde6d1c887c65da2b98b7ddefab189dcadab9a1d6792fee",
             constURL: "",
             constHash: "",
             treasuryTarget: "",
@@ -480,6 +482,8 @@ class App extends React.Component {
             comboStakeRegCoin: "2000000",
             comboVoteDelegTarget: "",
             // Gov actions
+            gaMetadataURL: "https://raw.githubusercontent.com/Ryun1/metadata/main/cip100/ga.jsonld",
+            gaMetadataHash: "d57d30d2d03298027fde6d1c887c65da2b98b7ddefab189dcadab9a1d6792fee",
             constURL: "",
             constHash: "",
             treasuryTarget: "",
@@ -1271,8 +1275,8 @@ class App extends React.Component {
             }
             const constChangeGovAct = GovernanceAction.new_new_constitution_action(constChange);
             // Create anchor and then reset state
-            const anchorURL = URL.new(this.state.cip95MetadataURL);
-            const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
+            const anchorURL = URL.new(this.state.gaMetadataURL);
+            const anchorHash = AnchorDataHash.from_hex(this.state.gaMetadataHash);
             const anchor = Anchor.new(anchorURL, anchorHash);
             // Lets just use the connect wallet's reward address
             const rewardAddr = RewardAddress.from_address(Address.from_bech32(this.state.rewardAddress));
@@ -1296,8 +1300,8 @@ class App extends React.Component {
             const infoAction = InfoAction.new();
             const infoGovAct = GovernanceAction.new_info_action(infoAction);
             // Create anchor and then reset state
-            const anchorURL = URL.new(this.state.cip95MetadataURL);
-            const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
+            const anchorURL = URL.new(this.state.gaMetadataURL);
+            const anchorHash = AnchorDataHash.from_hex(this.state.gaMetadataHash);
             const anchor = Anchor.new(anchorURL, anchorHash);
             // Lets just use the connect wallet's reward address
             const rewardAddr = RewardAddress.from_address(Address.from_bech32(this.state.rewardAddress));
@@ -1332,8 +1336,8 @@ class App extends React.Component {
             }
             const treasuryGovAct = GovernanceAction.new_treasury_withdrawals_action(treasuryAction);
             // Create anchor and then reset state
-            const anchorURL = URL.new(this.state.cip95MetadataURL);
-            const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
+            const anchorURL = URL.new(this.state.gaMetadataURL);
+            const anchorHash = AnchorDataHash.from_hex(this.state.gaMetadataHash);
             const anchor = Anchor.new(anchorURL, anchorHash);
             // Lets just use the connect wallet's reward address
             const rewardAddr = RewardAddress.from_address(Address.from_bech32(this.state.rewardAddress));
@@ -1383,8 +1387,8 @@ class App extends React.Component {
             const updateComGovAct = GovernanceAction.new_new_committee_action(updateComAction);
 
             // Create anchor and then reset state
-            const anchorURL = URL.new(this.state.cip95MetadataURL);
-            const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
+            const anchorURL = URL.new(this.state.gaMetadataURL);
+            const anchorHash = AnchorDataHash.from_hex(this.state.gaMetadataHash);
             const anchor = Anchor.new(anchorURL, anchorHash);
             // Lets just use the connect wallet's reward address
             const rewardAddr = RewardAddress.from_address(Address.from_bech32(this.state.rewardAddress));
@@ -1415,8 +1419,8 @@ class App extends React.Component {
             }
             const noConfidenceGovAct = GovernanceAction.new_no_confidence_action(noConfidenceAction);
             // Create anchor and then reset state
-            const anchorURL = URL.new(this.state.cip95MetadataURL);
-            const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
+            const anchorURL = URL.new(this.state.gaMetadataURL);
+            const anchorHash = AnchorDataHash.from_hex(this.state.gaMetadataHash);
             const anchor = Anchor.new(anchorURL, anchorHash);
             // Lets just use the connect wallet's reward address
             const rewardAddr = RewardAddress.from_address(Address.from_bech32(this.state.rewardAddress));
@@ -1463,8 +1467,8 @@ class App extends React.Component {
             }
             const parameterChangeGovAct = GovernanceAction.new_parameter_change_action(parameterChangeAction);
             // Create anchor and then reset state
-            const anchorURL = URL.new(this.state.cip95MetadataURL);
-            const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
+            const anchorURL = URL.new(this.state.gaMetadataURL);
+            const anchorHash = AnchorDataHash.from_hex(this.state.gaMetadataHash);
             const anchor = Anchor.new(anchorURL, anchorHash);
             // Lets just use the connect wallet's reward address
             const rewardAddr = RewardAddress.from_address(Address.from_bech32(this.state.rewardAddress));
@@ -1495,8 +1499,8 @@ class App extends React.Component {
             }
             const hardForkInitiationGovAct = GovernanceAction.new_hard_fork_initiation_action(hardForkInitiationAction);
             // Create anchor and then reset state
-            const anchorURL = URL.new(this.state.cip95MetadataURL);
-            const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
+            const anchorURL = URL.new(this.state.gaMetadataURL);
+            const anchorHash = AnchorDataHash.from_hex(this.state.gaMetadataHash);
             const anchor = Anchor.new(anchorURL, anchorHash);
             // Lets just use the connect wallet's reward address
             const rewardAddr = RewardAddress.from_address(Address.from_bech32(this.state.rewardAddress));
@@ -1826,8 +1830,8 @@ class App extends React.Component {
                         <InputGroup
                             disabled={false}
                             leftIcon="id-number"
-                            onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
-                            defaultValue={this.state.cip95MetadataURL}
+                            onChange={(event) => this.setState({gaMetadataURL: event.target.value})}
+                            defaultValue={this.state.gaMetadataURL}
                         />
                     </FormGroup>
 
@@ -1837,7 +1841,8 @@ class App extends React.Component {
                         <InputGroup
                             disabled={false}
                             leftIcon="id-number"
-                            onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
+                            onChange={(event) => this.setState({gaMetadataHash: event.target.value})}
+                            defaultValue={this.state.gaMetadataHash}
                         />
                     </FormGroup>               
 
@@ -1861,8 +1866,9 @@ class App extends React.Component {
                             </div>
                         } />
                         <Tab id="2" title="💡 Governance Action: Update Constitutional Committee" panel={
+                            
                             <div style={{marginLeft: "20px"}}>
-
+                                <h4>For convenience we limit to adding or removing only one credential at a time. </h4>
                                 <FormGroup
                                     helperText="(Bech32 or Hex encoded)"
                                     label="Optional: Committee Cold Credential to add"
@@ -1991,8 +1997,9 @@ class App extends React.Component {
 
                             </div>
                         } />
-                        <Tab id="4" title="💡 Governance Action: Hard-Fork Initation" panel={
+                        <Tab id="4" title="[WIP] 💡 Governance Action: Hard-Fork Initiation" panel={
                             <div style={{marginLeft: "20px"}}>
+                                <h4>WIP because hardfork actions are unable to be enacted on SanchoNet yet. </h4>
 
                                 <FormGroup
                                     helperText=""
@@ -2044,6 +2051,7 @@ class App extends React.Component {
                         } />
                         <Tab id="5" title="[WIP] 💡 Governance Action: Protocol Parameter Update" panel={
                             <div style={{marginLeft: "20px"}}>
+                                <h4>WIP because this only allows changing of stake key deposit to 0. </h4>
 
                                 <FormGroup
                                     label="Optional: Previously enacted update parameter action tx hash"
@@ -2084,7 +2092,7 @@ class App extends React.Component {
                         } />
                         <Tab id="6" title="💡 Governance Action: Treasury Withdrawal" panel={
                             <div style={{marginLeft: "20px"}}>
-
+                                <h4>For convenience we only allow withdrawal to one address. </h4>
                                 <FormGroup
                                     label="Treasury Withdrawal Target Rewards Address"
                                 >
@@ -2645,7 +2653,7 @@ class App extends React.Component {
                 <hr style={{marginTop: "10px", marginBottom: "10px"}}/>
                 {this.state.cip95ResultTx !== '' && this.state.cip95ResultHash !== '' && (
                 <>
-                    <h5>🚀 Transaction built, sign and submitted successfully 🚀</h5>
+                    <h5>🚀 Transaction signed and submitted successfully 🚀</h5>
                 </>
                 )}
                 <p><span style={{fontWeight: "bold"}}>Tx Hash: </span>{this.state.cip95ResultHash}</p>
