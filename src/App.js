@@ -870,9 +870,6 @@ class App extends React.Component {
                 this.setState({cip95MetadataURL : undefined});
                 this.setState({cip95MetadataHash : undefined});
                 this.setState({totalRefunds : undefined});
-            } else {
-                this.setState({signAndSubmitError : String(cip95ResultWitness)})
-                throw new Error("Error during submission of transaction")
             }
         } catch (err) {
             console.log("Error during build, sign and submit transaction");
