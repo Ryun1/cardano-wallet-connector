@@ -3,7 +3,7 @@
 | Tag | Feature Details | demos Wallet Tag | Deployed Currently? |
 | --- | --------------- |----------------- | ------------------- |
 | [1.7.0](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.7.0) | [Here](./CHANGELOG.md#170) | [1.7.0+](https://github.com/Ryun1/cip95-demos-wallet/tags) | No |
-| [1.8.0](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.8.0) | | [Here](./CHANGELOG.md#180) | [1.8.0+](https://github.com/Ryun1/cip95-demos-wallet/tags) | [Yes](https://ryun1.github.io/cip95-cardano-wallet-connector/) |
+| [1.8.0](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.8.0) | [Here](./CHANGELOG.md#180) | [1.8.0+](https://github.com/Ryun1/cip95-demos-wallet/tags) | [Yes](https://ryun1.github.io/cip95-cardano-wallet-connector/) |
 
 ## CIP-95/Conway Features Supported Notes
 
