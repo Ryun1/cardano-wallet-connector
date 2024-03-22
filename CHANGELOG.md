@@ -1,5 +1,10 @@
 # Tags
 
+### 1.8.0
+- Bumped to CSL 12 alpha 19
+- Added proposal policy things
+- Added some basic UI error handling
+
 ### 1.6.4
 - Added Treasury donations
 - Added Treasury values
