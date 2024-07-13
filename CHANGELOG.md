@@ -1,6 +1,9 @@
 # Tags
 
 ### 1.8.0
+- Bumped to CSL 12 beta 2
+
+### 1.8.0
 - Bumped to CSL 12 alpha 19
 - Added proposal policy things
 - Added some basic UI error handling
