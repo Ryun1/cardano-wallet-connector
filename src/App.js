@@ -2745,7 +2745,7 @@ class App extends React.Component {
                 <p><span style={{fontWeight: "bold"}}>CborHex Tx: </span>{this.state.cip95ResultTx}</p>
                 <hr style={{marginTop: "2px", marginBottom: "10px"}}/>
                 
-                <h5>💖 Powered by CSL 12 alpha 19 💖</h5>
+                <h5>💖 Powered by CSL 12.0.0 beta 2 💖</h5>
             </div>
         )
     }
