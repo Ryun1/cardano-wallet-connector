@@ -9,10 +9,10 @@
 
 See [CHANGELOG.md](./CHANGELOG.md) for feature details on older tags.
 
-### 1.8.1
-- Bump to CSL 12.0.0-beta.2
+### 1.9.0
+- add support for guard rails script
 
-### 1.8.2 (In progress)
+### 1.9.1 (In progress)
 - `.cip95.signData`
 - refactor
 
