@@ -1,5 +1,8 @@
 # Tags
 
+### 1.9.0
+- add support for guard rails script
+
 ### 1.8.0
 - Bumped to CSL 12 beta 2
 
