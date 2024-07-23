@@ -492,8 +492,8 @@ class App extends React.Component {
             constHash: "",
             treasuryTarget: "",
             treasuryWithdrawalAmount: "",
-            hardForkUpdateMajor: "",
-            hardForkUpdateMinor: "",
+            hardForkUpdateMajor: "10",
+            hardForkUpdateMinor: "0",
             committeeAdd: undefined,
             committeeExpiry: undefined,
             committeeRemove: undefined,
@@ -2021,7 +2021,8 @@ class App extends React.Component {
                                 </FormGroup>
 
                                 <FormGroup
-                                    label="Optional: Proposal Policy Script hash"
+                                    label="Optional: New Guard Rails Script Script hash"
+                                    helperText="The hash of a new guard rails script hash."
                                 >
                                     <InputGroup
                                         disabled={false}
@@ -2056,9 +2057,8 @@ class App extends React.Component {
 
                             </div>
                         } />
-                        <Tab id="4" title="[WIP] 💡 Governance Action: Hard-Fork Initiation" panel={
+                        <Tab id="4" title="💡 Governance Action: Hard-Fork Initiation" panel={
                             <div style={{marginLeft: "20px"}}>
-                                <h4>WIP because hardfork actions are unable to be enacted on SanchoNet yet. </h4>
 
                                 <FormGroup
                                     helperText=""
@@ -2068,6 +2068,7 @@ class App extends React.Component {
                                         disabled={false}
                                         leftIcon="id-number"
                                         onChange={(event) => this.setState({hardForkUpdateMajor: event.target.value})}
+                                        defaultValue={this.state.hardForkUpdateMajor}
                                     />
                                 </FormGroup>
 
@@ -2079,6 +2080,7 @@ class App extends React.Component {
                                         disabled={false}
                                         leftIcon="id-number"
                                         onChange={(event) => this.setState({hardForkUpdateMinor: event.target.value})}
+                                        defaultValue={this.state.hardForkUpdateMinor}
                                     />
                                 </FormGroup>
 
@@ -2135,8 +2137,8 @@ class App extends React.Component {
                                 </FormGroup>
 
                                 <FormGroup
-                                    label="Optional: Proposal Policy Script hash"
-                                    helperText="Required if there has been a proposal policy voted in before"
+                                    label="Optional: Guard Rails Script Script hash"
+                                    helperText="Required if there has been a guard rails script ratified on-chain currently."
                                 >
                                     <InputGroup
                                         disabled={false}
@@ -2173,8 +2175,8 @@ class App extends React.Component {
                                 </FormGroup>
 
                                 <FormGroup
-                                    label="Optional: Proposal Policy Script hash"
-                                    helperText="Required if there has been a proposal policy voted in before"
+                                    label="Optional: Guard Rails Script Script hash"
+                                    helperText="Required if there has been a guard rails script ratified on-chain currently."
                                 >
                                     <InputGroup
                                         disabled={false}
