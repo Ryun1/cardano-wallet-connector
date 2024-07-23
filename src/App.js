@@ -52,6 +52,7 @@ import {
     HardForkInitiationAction,
     ProtocolVersion,
     ScriptHash,
+    ChangeConfig,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 import {
@@ -464,7 +465,7 @@ class App extends React.Component {
             voteDelegationTarget: "",
             voteDelegationStakeCred: "",
             dRepRegTarget: "",
-            dRepDeposit: "2000000",
+            dRepDeposit: "500000000",
             voteGovActionTxHash: "",
             voteGovActionIndex: "",
             voteChoice: "",
@@ -817,9 +818,13 @@ class App extends React.Component {
             
             // Add output of 1 ADA plus total needed for refunds 
             let outputValue = BigNum.from_str('1000000')
-            if (this.state.totalRefunds) {
-                outputValue = outputValue.checked_add(this.state.totalRefunds)
+
+            // Ensure the total output is larger than total implicit inputs (refunds / withdrawals)
+            if (!txBuilder.get_implicit_input().is_zero()){
+                outputValue = outputValue.checked_add(txBuilder.get_implicit_input().coin())
             }
+
+            // add output to the transaction
             txBuilder.add_output(
                 TransactionOutput.new(
                     shelleyOutputAddress,
@@ -829,11 +834,18 @@ class App extends React.Component {
             // Find the available UTxOs in the wallet and use them as Inputs for the transaction
             await this.getUtxos();
             const txUnspentOutputs = await this.getTxUnspentOutputs();
-            // Use UTxO selection strategy 2
-            txBuilder.add_inputs_from(txUnspentOutputs, 2)
 
-            // Set change address, incase too much ADA provided for fee
-            txBuilder.add_change_if_needed(shelleyChangeAddress)
+            // Use UTxO selection strategy 2 and add change address to be used if needed
+            const changeConfig = ChangeConfig.new(shelleyChangeAddress);
+            
+            // Use UTxO selection strategy 2 if strategy 3 fails
+            try {
+                txBuilder.add_inputs_from_and_change(txUnspentOutputs, 3, changeConfig);
+            } catch (e) {
+                console.error(e);
+                txBuilder.add_inputs_from_and_change(txUnspentOutputs, 2, changeConfig);
+            }
+
             // Build transaction body
             const txBody = txBuilder.build();
             // Make a full transaction, passing in empty witness set
