@@ -172,7 +172,7 @@ class App extends React.Component {
             govActDeposit: "100000000000",
             govActPrevActionHash: undefined,
             govActPrevActionIndex: undefined,
-            proposalPolicy: undefined,
+            guardRailsScript: undefined,
         }
 
         /**
@@ -503,7 +503,7 @@ class App extends React.Component {
             govActDeposit: "1000000000",
             govActPrevActionHash: undefined,
             govActPrevActionIndex: undefined,
-            proposalPolicy: undefined,
+            guardRailsScript: undefined,
         });
     }
 
@@ -1312,8 +1312,8 @@ class App extends React.Component {
             const constAnchor = Anchor.new(constURL, constDataHash);
             // Add in proposal policy if provided
             let constitution;
-            if (this.state.proposalPolicy) {
-                constitution = Constitution.new_with_script_hash(constAnchor, ScriptHash.from_hex(this.state.proposalPolicy));
+            if (this.state.guardRailsScript) {
+                constitution = Constitution.new_with_script_hash(constAnchor, ScriptHash.from_hex(this.state.guardRailsScript));
             } else {
                 constitution = Constitution.new(constAnchor);
             }
@@ -1387,9 +1387,8 @@ class App extends React.Component {
             // Create new treasury withdrawal gov act
             // if proposal policy
             let treasuryAction;
-            if (this.state.proposalPolicy) {
-                treasuryAction = TreasuryWithdrawalsAction.new_with_policy_hash(withdrawals, ScriptHash.from_hex(this.state.proposalPolicy));
-
+            if (this.state.guardRailsScript) {
+                treasuryAction = TreasuryWithdrawalsAction.new_with_policy_hash(withdrawals, ScriptHash.from_hex(this.state.guardRailsScript));
             } else {
                 treasuryAction = TreasuryWithdrawalsAction.new(withdrawals);
             }
@@ -1517,8 +1516,8 @@ class App extends React.Component {
             if (this.state.govActPrevActionHash && this.state.govActPrevActionIndex) {
                 const prevActionId = GovernanceActionId.new(TransactionHash.from_hex(this.state.govActPrevActionHash), this.state.govActPrevActionIndex);
                 // if policy
-                if (this.state.proposalPolicy){
-                    parameterChangeAction = ParameterChangeAction.new_with_policy_hash_and_action_id(prevActionId, protocolParmUpdate, ScriptHash.from_hex(this.state.proposalPolicy));
+                if (this.state.guardRailsScript){
+                    parameterChangeAction = ParameterChangeAction.new_with_policy_hash_and_action_id(prevActionId, protocolParmUpdate, ScriptHash.from_hex(this.state.guardRailsScript));
                 // else no policy and just prev action
                 } else {
                     parameterChangeAction = ParameterChangeAction.new_with_action_id(prevActionId, protocolParmUpdate);
@@ -1526,8 +1525,8 @@ class App extends React.Component {
             // else no prev action
             } else {
                 // if policy and no prev action
-                if (this.state.proposalPolicy){
-                    parameterChangeAction = ParameterChangeAction.new_with_policy_hash(protocolParmUpdate, ScriptHash.from_hex(this.state.proposalPolicy));
+                if (this.state.guardRailsScript){
+                    parameterChangeAction = ParameterChangeAction.new_with_policy_hash(protocolParmUpdate, ScriptHash.from_hex(this.state.guardRailsScript));
                 } else {
                 // if no policy and no prev action
                     parameterChangeAction = ParameterChangeAction.new(protocolParmUpdate);
@@ -2052,7 +2051,7 @@ class App extends React.Component {
                                     <InputGroup
                                         disabled={false}
                                         leftIcon="id-number"
-                                        onChange={(event) => this.setState({proposalPolicy: event.target.value})}
+                                        onChange={(event) => this.setState({guardRailsScript: event.target.value})}
                                     />
                                 </FormGroup>
 
@@ -2168,7 +2167,7 @@ class App extends React.Component {
                                     <InputGroup
                                         disabled={false}
                                         leftIcon="id-number"
-                                        onChange={(event) => this.setState({proposalPolicy: event.target.value})}
+                                        onChange={(event) => this.setState({guardRailsScript: event.target.value})}
                                     />
                                 </FormGroup>
 
@@ -2206,7 +2205,7 @@ class App extends React.Component {
                                     <InputGroup
                                         disabled={false}
                                         leftIcon="id-number"
-                                        onChange={(event) => this.setState({proposalPolicy: event.target.value})}
+                                        onChange={(event) => this.setState({guardRailsScript: event.target.value})}
                                     />
                                 </FormGroup>
 
