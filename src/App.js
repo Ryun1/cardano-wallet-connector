@@ -53,6 +53,7 @@ import {
     ProtocolVersion,
     ScriptHash,
     ChangeConfig,
+    PlutusScript,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 import {
@@ -1388,6 +1389,7 @@ class App extends React.Component {
             let treasuryAction;
             if (this.state.proposalPolicy) {
                 treasuryAction = TreasuryWithdrawalsAction.new_with_policy_hash(withdrawals, ScriptHash.from_hex(this.state.proposalPolicy));
+
             } else {
                 treasuryAction = TreasuryWithdrawalsAction.new(withdrawals);
             }
@@ -1929,6 +1931,17 @@ class App extends React.Component {
                                         disabled={false}
                                         leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
+                                    />
+                                </FormGroup>
+
+                                <FormGroup
+                                    label="Optional: Previously enacted no-confidence action tx index"
+                                    helperText="Required if there has been a no-confidence action enacted before"
+                                >
+                                    <InputGroup
+                                        disabled={false}
+                                        leftIcon="id-number"
+                                        onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
                                     />
                                 </FormGroup>
 
