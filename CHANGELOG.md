@@ -2,6 +2,7 @@
 
 ### 1.9.0
 - add support for guard rails script
+- Fixed `InputSetEmptyUTxO` when transaction had implicit inputs
 
 ### 1.8.0
 - Bumped to CSL 12 beta 2
