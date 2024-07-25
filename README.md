@@ -11,6 +11,7 @@ See [CHANGELOG.md](./CHANGELOG.md) for feature details on older tags.
 
 ### 1.9.0
 - add support for guard rails script
+- Fixed `InputSetEmptyUTxO` when transaction had implicit inputs
 
 ### 1.9.1 (In progress)
 - `.cip95.signData`
