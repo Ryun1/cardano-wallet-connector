@@ -54,6 +54,21 @@ import {
     ScriptHash,
     ChangeConfig,
     PlutusScript,
+    PlutusWitness,
+    PlutusData,
+    Redeemer,
+    RedeemerTag,
+    PlutusMap,
+    ExUnits,
+    PlutusScripts,
+    Redeemers,
+    TxInputsBuilder,
+    ScriptDataHash,
+    Costmdls,
+    Language,
+    Languages,
+    ExUnitPrices,
+    hash_script_data,
 } from "@emurgo/cardano-serialization-lib-asmjs"
 import "./App.css";
 import {
@@ -172,7 +187,8 @@ class App extends React.Component {
             govActDeposit: "100000000000",
             govActPrevActionHash: undefined,
             govActPrevActionIndex: undefined,
-            guardRailsScript: undefined,
+            guardRailsScriptHash: "edcd84c10e36ae810dc50847477083069db796219b39ccde790484e0",
+            guardRailsScript: "59082c0101003232323232323232323232323232323232323232323232323232323232323232323232323232323232323225932325333573466e1d2000001180098121bab357426ae88d55cf001054ccd5cd19b874801000460042c6aae74004dd51aba1357446ae88d55cf1baa325333573466e1d200a35573a00226ae84d5d11aab9e0011637546ae84d5d11aba235573c6ea800642b26006003149a2c8a4c3021801c0052000c00e0070018016006901e40608058c00e00290016007003800c00b0034830268320306007001800600690406d6204e00060001801c0052004c00e007001801600690404001e0006007001800600690404007e00060001801c0052006c00e006023801c006001801a4101000980018000600700148023003801808e0070018006006904827600060001801c005200ac00e0070018016006904044bd4060c00e003000c00d2080ade204c000c0003003800a4019801c00e003002c00d2080cab5ee0180c100d1801c005200ec00e0060238000c00e00290086007003800c00b003483d00e0306007001800600690500fe00040243003800a4025803c00c01a0103003800a4029803c00e003002c00cc07520d00f8079801c006001801980ea4120078001800060070014805b00780180360070018006006603e900a4038c0003003800a4041801c00c04601a3003800a4045801c00e003002c00d20f02e80c1801c006001801a4190cb80010090c00e00290126000c00e0029013600b003803c00e003002c00cc0752032c000c00e003000c00cc075200ac000c0006007007801c006005801980ea418170058001801c006001801980ea41209d80018000c0003003800a4051802c00e007003011c00e003000c00d2080e89226c000c0006007003801808e007001800600690406c4770b7e000600030000c00e0029015600b003801c00c047003800c00300348202e2e1cb00030001801c00e006023801c006001801a410181f905540580018000c0003003800a4059801c00c047003800c00300348203000700030000c00e00290176007003800c00b003483200603060070018006006904801e00040243003800a4061801c00c0430001801c0052032c016006003801801e00600780180140100c00e002901a600b003001c00c00f003003c00c00f003002c00c007003001c00c007003803c00e003002c00c0560184014802000c00e002901b6007003800c00b003480030034801b0001801c006001801a4029800180006007001480e3003801c006005801a4001801a40498000c00e003000c00d20ca04c00080486007001480eb00380180860070018006006900f600060001801c005203cc00e006015801c006001801a4101012bcf138c09800180006007001480fb003801805600700180060069040505bc3f482e00060001801c0052040c00e0070018016006900d4060c00e003000c00d204ac000c0003003800a4085801c00c04601630000000000200f003006c00e003000c00c05a0166000200f003005c00e003000c00c057003010c0006000200f003800c00b003012c00cc05d2028c0004008801c01e007001801600602380010043000400e003000c00c04b003011c0006000800c00b00300d8049001801600601d801980924190038000801c0060010066000801c00600900f6000800c00b003480030034820225eb0001003800c003003483403f0003000400c023000400e003000c00d208094ebdc03c000c001003009c001003300f4800b0004006005801a40058001001801401c6014900518052402860169004180424008600a900a180324005003480030001806240cc6016900d18052402460129004180424004600e900018032400c6014446666aae7c004a0005003328009aab9d0019aab9e0011aba100298019aba200224c6012444a6520071300149a4432005225900689802a4d2219002912c998099bad0020068ac99807002800c4cc03001c00e300244cc03001c02a3002012c801460012218010c00888004c004880094cc8c0040048848c8cc0088c00888c00800c8c00888c00400c8d4cc01001000cd400c0044888cc00c896400a300090999804c00488ccd5cd19b87002001800400a01522333573466e2000800600100291199ab9a33712004003000801488ccd5cd19b89002001801400244666ae68cdc4001000c00a001225333573466e240080044004400a44a666ae68cdc4801000880108008004dd6801484cc010004dd6001484c8ccc02a002452005229003912999ab9a3370e0080042666ae68cdc3801800c00200430022452005229003911980899b820040013370400400648a400a45200722333573466e20cdc100200099b82002003800400880648a400a45200722333573466e24cdc100200099b82002003801400091480148a400e44666ae68cdc419b8200400133704004007002800122593300e0020018800c400922593300e00200188014400400233323357346ae8cd5d10009198051bad357420066eb4d5d08011aba2001268001bac00214800c8ccd5cd1aba3001800400a444b26600c0066ae8400626600a0046ae8800630020c0148894ccd5cd19b87480000045854ccd5cd19b88001480004cc00ccdc0a400000466e05200000113280099b8400300199b840020011980200100098021112999ab9a3370e9000000880109980180099b860020012223300622590018c002443200522323300d225900189804803488564cc0140080322600800318010004b20051900991111111001a3201322222222005448964ce402e444444440100020018c00a30000002225333573466e1c00800460002a666ae68cdc48010008c010600445200522900391199ab9a3371266e08010004cdc1001001c0020041191800800918011198010010009",
         }
 
         /**
@@ -500,10 +516,11 @@ class App extends React.Component {
             committeeExpiry: undefined,
             committeeRemove: undefined,
             committeeQuorum: undefined,
-            govActDeposit: "1000000000",
+            govActDeposit: "100000000000",
             govActPrevActionHash: undefined,
             govActPrevActionIndex: undefined,
-            guardRailsScript: undefined,
+            guardRailsScriptHash: "edcd84c10e36ae810dc50847477083069db796219b39ccde790484e0",
+            guardRailsScript: "59082c0101003232323232323232323232323232323232323232323232323232323232323232323232323232323232323225932325333573466e1d2000001180098121bab357426ae88d55cf001054ccd5cd19b874801000460042c6aae74004dd51aba1357446ae88d55cf1baa325333573466e1d200a35573a00226ae84d5d11aab9e0011637546ae84d5d11aba235573c6ea800642b26006003149a2c8a4c3021801c0052000c00e0070018016006901e40608058c00e00290016007003800c00b0034830268320306007001800600690406d6204e00060001801c0052004c00e007001801600690404001e0006007001800600690404007e00060001801c0052006c00e006023801c006001801a4101000980018000600700148023003801808e0070018006006904827600060001801c005200ac00e0070018016006904044bd4060c00e003000c00d2080ade204c000c0003003800a4019801c00e003002c00d2080cab5ee0180c100d1801c005200ec00e0060238000c00e00290086007003800c00b003483d00e0306007001800600690500fe00040243003800a4025803c00c01a0103003800a4029803c00e003002c00cc07520d00f8079801c006001801980ea4120078001800060070014805b00780180360070018006006603e900a4038c0003003800a4041801c00c04601a3003800a4045801c00e003002c00d20f02e80c1801c006001801a4190cb80010090c00e00290126000c00e0029013600b003803c00e003002c00cc0752032c000c00e003000c00cc075200ac000c0006007007801c006005801980ea418170058001801c006001801980ea41209d80018000c0003003800a4051802c00e007003011c00e003000c00d2080e89226c000c0006007003801808e007001800600690406c4770b7e000600030000c00e0029015600b003801c00c047003800c00300348202e2e1cb00030001801c00e006023801c006001801a410181f905540580018000c0003003800a4059801c00c047003800c00300348203000700030000c00e00290176007003800c00b003483200603060070018006006904801e00040243003800a4061801c00c0430001801c0052032c016006003801801e00600780180140100c00e002901a600b003001c00c00f003003c00c00f003002c00c007003001c00c007003803c00e003002c00c0560184014802000c00e002901b6007003800c00b003480030034801b0001801c006001801a4029800180006007001480e3003801c006005801a4001801a40498000c00e003000c00d20ca04c00080486007001480eb00380180860070018006006900f600060001801c005203cc00e006015801c006001801a4101012bcf138c09800180006007001480fb003801805600700180060069040505bc3f482e00060001801c0052040c00e0070018016006900d4060c00e003000c00d204ac000c0003003800a4085801c00c04601630000000000200f003006c00e003000c00c05a0166000200f003005c00e003000c00c057003010c0006000200f003800c00b003012c00cc05d2028c0004008801c01e007001801600602380010043000400e003000c00c04b003011c0006000800c00b00300d8049001801600601d801980924190038000801c0060010066000801c00600900f6000800c00b003480030034820225eb0001003800c003003483403f0003000400c023000400e003000c00d208094ebdc03c000c001003009c001003300f4800b0004006005801a40058001001801401c6014900518052402860169004180424008600a900a180324005003480030001806240cc6016900d18052402460129004180424004600e900018032400c6014446666aae7c004a0005003328009aab9d0019aab9e0011aba100298019aba200224c6012444a6520071300149a4432005225900689802a4d2219002912c998099bad0020068ac99807002800c4cc03001c00e300244cc03001c02a3002012c801460012218010c00888004c004880094cc8c0040048848c8cc0088c00888c00800c8c00888c00400c8d4cc01001000cd400c0044888cc00c896400a300090999804c00488ccd5cd19b87002001800400a01522333573466e2000800600100291199ab9a33712004003000801488ccd5cd19b89002001801400244666ae68cdc4001000c00a001225333573466e240080044004400a44a666ae68cdc4801000880108008004dd6801484cc010004dd6001484c8ccc02a002452005229003912999ab9a3370e0080042666ae68cdc3801800c00200430022452005229003911980899b820040013370400400648a400a45200722333573466e20cdc100200099b82002003800400880648a400a45200722333573466e24cdc100200099b82002003801400091480148a400e44666ae68cdc419b8200400133704004007002800122593300e0020018800c400922593300e00200188014400400233323357346ae8cd5d10009198051bad357420066eb4d5d08011aba2001268001bac00214800c8ccd5cd1aba3001800400a444b26600c0066ae8400626600a0046ae8800630020c0148894ccd5cd19b87480000045854ccd5cd19b88001480004cc00ccdc0a400000466e05200000113280099b8400300199b840020011980200100098021112999ab9a3370e9000000880109980180099b860020012223300622590018c002443200522323300d225900189804803488564cc0140080322600800318010004b20051900991111111001a3201322222222005448964ce402e444444440100020018c00a30000002225333573466e1c00800460002a666ae68cdc48010008c010600445200522900391199ab9a3371266e08010004cdc1001001c0020041191800800918011198010010009",
         });
     }
 
@@ -581,6 +598,12 @@ class App extends React.Component {
                 .coins_per_utxo_byte(BigNum.from_str(this.protocolParams.coinsPerUTxOByte))
                 .max_value_size(this.protocolParams.maxValSize)
                 .max_tx_size(this.protocolParams.maxTxSize)
+                .ex_unit_prices(
+                    ExUnitPrices.new(
+                        UnitInterval.new(BigNum.from_str("577"),BigNum.from_str("10000")), 
+                        UnitInterval.new(BigNum.from_str("721"),BigNum.from_str("10000000"))
+                    )
+                )
                 .prefer_pure_change(true)
                 .build()
         );
@@ -816,9 +839,8 @@ class App extends React.Component {
             // Set output and change addresses to those of our wallet
             const shelleyOutputAddress = Address.from_bech32(this.state.usedAddress);
             const shelleyChangeAddress = Address.from_bech32(this.state.changeAddress);
-            
             // Add output of 1 ADA plus total needed for refunds 
-            let outputValue = BigNum.from_str('1000000')
+            let outputValue = BigNum.from_str('10000000')
 
             // Ensure the total output is larger than total implicit inputs (refunds / withdrawals)
             if (!txBuilder.get_implicit_input().is_zero()){
@@ -838,13 +860,51 @@ class App extends React.Component {
 
             // Use UTxO selection strategy 2 and add change address to be used if needed
             const changeConfig = ChangeConfig.new(shelleyChangeAddress);
+
+            const collat = TxInputsBuilder.new()
+            collat.add_regular_input(shelleyChangeAddress, txUnspentOutputs.get(0).input(), Value.new(BigNum.from_str('5000000')));
+            txBuilder.set_collateral(collat);
             
+            // txBuilder.set_total_collateral_and_return(BigNum.from_str('4000000'), shelleyChangeAddress);
+            // txBuilder.set_collateral_return_and_total(txUnspentOutputs.get(0).output());
+
             // Use UTxO selection strategy 2 if strategy 3 fails
+            // try {
+            //     txBuilder.add_inputs_from_and_change_with_collateral_return(txUnspentOutputs, 3, changeConfig, BigNum.from_str("40"));
+            // } catch (e) {
+            //     console.error(e);
+            //     txBuilder.add_inputs_from_and_change_with_collateral_return(txUnspentOutputs, 2, changeConfig, BigNum.from_str("40"))
+            // }
+
+            const script = PlutusScript.new_v3(Buffer.from(this.state.guardRailsScript, "hex"));
+            const redeemerTag = RedeemerTag.new_voting_proposal(0);
+            const plutusData  = PlutusData.new_map(PlutusMap.new());
+            const exUnits = ExUnits.new(BigNum.from_str("402468"), BigNum.from_str("89488792"));
+            const redeemer = Redeemer.new(redeemerTag, BigNum.from_str("0"), plutusData, exUnits)
+            const scriptWitness = PlutusWitness.new_without_datum(script, redeemer);
+
+            const costmdls = Costmdls.new()
+
+            const languages = Languages.new()
+            languages.add(Language.new_plutus_v3()) 
+
+            costmdls.retain_language_versions(languages)
+            // txBuilder.calc_script_data_hash(costmdls);
+
+            const scripts = PlutusScripts.new();
+            scripts.add(script);
+
+            const redeemers = Redeemers.new();
+            redeemers.add(redeemer);
+
+            const yeah = hash_script_data(redeemers, costmdls, undefined)
+            txBuilder.set_script_data_hash(yeah)
+
             try {
                 txBuilder.add_inputs_from_and_change(txUnspentOutputs, 3, changeConfig);
             } catch (e) {
                 console.error(e);
-                txBuilder.add_inputs_from_and_change(txUnspentOutputs, 2, changeConfig);
+                txBuilder.add_inputs_from_and_change(txUnspentOutputs, 2, changeConfig)
             }
 
             // Build transaction body
@@ -864,6 +924,10 @@ class App extends React.Component {
             // Create witness set object using the witnesses provided by the wallet
             txVkeyWitnesses = TransactionWitnessSet.from_bytes(Buffer.from(txVkeyWitnesses, "hex"));
             transactionWitnessSet.set_vkeys(txVkeyWitnesses.vkeys());
+
+            transactionWitnessSet.set_plutus_scripts(scripts);
+            transactionWitnessSet.set_redeemers(redeemers)
+
             // Build transaction with witnesses
             const signedTx = Transaction.new(
                 tx.body(),
@@ -1312,8 +1376,8 @@ class App extends React.Component {
             const constAnchor = Anchor.new(constURL, constDataHash);
             // Add in proposal policy if provided
             let constitution;
-            if (this.state.guardRailsScript) {
-                constitution = Constitution.new_with_script_hash(constAnchor, ScriptHash.from_hex(this.state.guardRailsScript));
+            if (this.state.guardRailsScriptHash) {
+                constitution = Constitution.new_with_script_hash(constAnchor, ScriptHash.from_hex(this.state.guardRailsScriptHash));
             } else {
                 constitution = Constitution.new(constAnchor);
             }
@@ -1387,8 +1451,8 @@ class App extends React.Component {
             // Create new treasury withdrawal gov act
             // if proposal policy
             let treasuryAction;
-            if (this.state.guardRailsScript) {
-                treasuryAction = TreasuryWithdrawalsAction.new_with_policy_hash(withdrawals, ScriptHash.from_hex(this.state.guardRailsScript));
+            if (this.state.guardRailsScriptHash) {
+                treasuryAction = TreasuryWithdrawalsAction.new_with_policy_hash(withdrawals, ScriptHash.from_hex(this.state.guardRailsScriptHash));
             } else {
                 treasuryAction = TreasuryWithdrawalsAction.new(withdrawals);
             }
@@ -1402,7 +1466,18 @@ class App extends React.Component {
             // Create voting proposal
             const votingProposal = VotingProposal.new(treasuryGovAct, anchor, rewardAddr, BigNum.from_str(this.state.govActDeposit))
             // Create gov action builder and set it in state
-            govActionBuilder.add(votingProposal)
+            const script = PlutusScript.new_v3(Buffer.from(this.state.guardRailsScript, "hex"));
+            const redeemerTag = RedeemerTag.new_voting_proposal(0);
+            const plutusData  = PlutusData.new_map(PlutusMap.new());
+            const exUnits = ExUnits.new(BigNum.from_str("402468"), BigNum.from_str("89488792"));
+            const redeemer = Redeemer.new(redeemerTag, BigNum.from_str("0"), plutusData, exUnits)
+            const scriptWitness = PlutusWitness.new_without_datum(script, redeemer);
+
+            if (this.state.guardRailsScriptHash) {
+                govActionBuilder.add_with_plutus_witness(votingProposal, scriptWitness);
+            } else {
+                govActionBuilder.add(votingProposal)
+            }
             await this.setGovActionBuilder(govActionBuilder)
             return true;
         } catch (err) {
@@ -1516,8 +1591,8 @@ class App extends React.Component {
             if (this.state.govActPrevActionHash && this.state.govActPrevActionIndex) {
                 const prevActionId = GovernanceActionId.new(TransactionHash.from_hex(this.state.govActPrevActionHash), this.state.govActPrevActionIndex);
                 // if policy
-                if (this.state.guardRailsScript){
-                    parameterChangeAction = ParameterChangeAction.new_with_policy_hash_and_action_id(prevActionId, protocolParmUpdate, ScriptHash.from_hex(this.state.guardRailsScript));
+                if (this.state.guardRailsScriptHash){
+                    parameterChangeAction = ParameterChangeAction.new_with_policy_hash_and_action_id(prevActionId, protocolParmUpdate, ScriptHash.from_hex(this.state.guardRailsScriptHash));
                 // else no policy and just prev action
                 } else {
                     parameterChangeAction = ParameterChangeAction.new_with_action_id(prevActionId, protocolParmUpdate);
@@ -1525,8 +1600,8 @@ class App extends React.Component {
             // else no prev action
             } else {
                 // if policy and no prev action
-                if (this.state.guardRailsScript){
-                    parameterChangeAction = ParameterChangeAction.new_with_policy_hash(protocolParmUpdate, ScriptHash.from_hex(this.state.guardRailsScript));
+                if (this.state.guardRailsScriptHash){
+                    parameterChangeAction = ParameterChangeAction.new_with_policy_hash(protocolParmUpdate, ScriptHash.from_hex(this.state.guardRailsScriptHash));
                 } else {
                 // if no policy and no prev action
                     parameterChangeAction = ParameterChangeAction.new(protocolParmUpdate);
@@ -2051,7 +2126,7 @@ class App extends React.Component {
                                     <InputGroup
                                         disabled={false}
                                         leftIcon="id-number"
-                                        onChange={(event) => this.setState({guardRailsScript: event.target.value})}
+                                        onChange={(event) => this.setState({guardRailsScriptHash: event.target.value})}
                                     />
                                 </FormGroup>
 
@@ -2167,7 +2242,8 @@ class App extends React.Component {
                                     <InputGroup
                                         disabled={false}
                                         leftIcon="id-number"
-                                        onChange={(event) => this.setState({guardRailsScript: event.target.value})}
+                                        onChange={(event) => this.setState({guardRailsScriptHash: event.target.value})}
+                                        defaultValue={this.state.guardRailsScriptHash}
                                     />
                                 </FormGroup>
 
@@ -2205,7 +2281,7 @@ class App extends React.Component {
                                     <InputGroup
                                         disabled={false}
                                         leftIcon="id-number"
-                                        onChange={(event) => this.setState({guardRailsScript: event.target.value})}
+                                        onChange={(event) => this.setState({guardRailsScriptHash: event.target.value})}
                                     />
                                 </FormGroup>
 
