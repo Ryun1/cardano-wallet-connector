@@ -6,19 +6,15 @@
 | [1.9.0](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.9.0) | [Here](./CHANGELOG.md#190) | [Yes](https://ryun1.github.io/cip95-cardano-wallet-connector/) |
 
 
-### 1.9.0
+### 1.9.1
 
-- add support for guard rails script
-- Fixed `InputSetEmptyUTxO` when transaction had implicit inputs
-- Updated default params
-- Minor improvements to governance actions 
+- Use total collateral and collateral return for better compatibility
+- Update code to support multiple proposals in single transaction
 
-### 1.9.1 (In progress)
+### 1.9.2 (In progress)
 
 - `.cip95.signData`
 - refactor
-- Use total collateral and collateral return for better compatibility
-- Update code to support multiple proposals in single transaction
 
 ## To Develop
 

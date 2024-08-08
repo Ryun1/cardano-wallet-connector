@@ -1,5 +1,11 @@
 # Tags
 
+
+### 1.9.1
+- Use total collateral and collateral return for better compatibility
+- Update code to support multiple proposals in single transaction
+
+
 ### 1.9.0
 - add support for guard rails script
 - Fixed `InputSetEmptyUTxO` when transaction had implicit inputs
