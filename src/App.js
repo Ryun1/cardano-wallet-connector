@@ -122,7 +122,7 @@ class App extends React.Component {
             // Keys
             dRepKey: undefined,
             cip105dRepID: undefined,
-            dRepIDBech32: undefined,
+            cip105dRepIDBech32: undefined,
             regStakeKeys: [],
             unregStakeKeys: [],
             regStakeKey: undefined,
@@ -462,7 +462,7 @@ class App extends React.Component {
             // Keys
             dRepKey: undefined,
             cip105dRepID: undefined,
-            dRepIDBech32: undefined,
+            cip105dRepIDBech32: undefined,
             regStakeKeys: [],
             unregStakeKeys: [],
             regStakeKey: undefined,
@@ -640,14 +640,14 @@ class App extends React.Component {
             const cip105dRepID = (PublicKey.from_hex(dRepKey)).hash();
             this.setState({dRepKey});
             this.setState({cip105dRepID : cip105dRepID.to_hex()});
-            const dRepIDBech32 = cip105dRepID.to_bech32('drep');
-            this.setState({dRepIDBech32});
+            const cip105dRepIDBech32 = cip105dRepID.to_bech32('drep');
+            this.setState({cip105dRepIDBech32});
             // Default use the wallet's cip105dRepID for DRep registration
-            this.setState({dRepRegTarget: dRepIDBech32});
+            this.setState({dRepRegTarget: cip105dRepIDBech32});
             // Default use the wallet's cip105dRepID for Vote delegation target
-            this.setState({voteDelegationTarget: dRepIDBech32});
+            this.setState({voteDelegationTarget: cip105dRepIDBech32});
             // Default use the wallet's cip105dRepID for combo Vote delegation target
-            this.setState({comboVoteDelegTarget: dRepIDBech32});
+            this.setState({comboVoteDelegTarget: cip105dRepIDBech32});
         } catch (err) {
             console.log(err)
         }
@@ -1775,7 +1775,7 @@ class App extends React.Component {
                 <h1>CIP-95 🤠</h1>
                 <p><span style={{fontWeight: "bold"}}>.cip95.getPubDRepKey(): </span>{this.state.dRepKey}</p>
                 <p><span style={{fontWeight: "lighter"}}>CIP-105 Hex DRep ID (Pub DRep Key hash): </span>{this.state.cip105dRepID}</p>
-                <p><span style={{fontWeight: "lighter"}}>CIP-105 Bech32 DRep ID (Pub DRep Key hash): </span>{this.state.dRepIDBech32}</p>
+                <p><span style={{fontWeight: "lighter"}}>CIP-105 Bech32 DRep ID (Pub DRep Key hash): </span>{this.state.cip105dRepIDBech32}</p>
                 <p><span style={{ fontWeight: "bold" }}>.cip95.getRegisteredPubStakeKeys():</span></p>
                 <ul>{this.state.regStakeKeys && this.state.regStakeKeys.length > 0 ? this.state.regStakeKeys.map((item, index) => ( <li style={{ fontSize: "12px" }} key={index}>{item}</li>)) : <li>No registered public stake keys returned.</li>}</ul>
                 <p><span style={{fontWeight: "lighter"}}> First registered Stake Key Hash (hex): </span>{this.state.regStakeKeyHashHex}</p>
