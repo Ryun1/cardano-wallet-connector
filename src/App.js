@@ -123,6 +123,8 @@ class App extends React.Component {
             dRepKey: undefined,
             cip105dRepID: undefined,
             cip105dRepIDBech32: undefined,
+            cip1295dRepID: undefined,
+            cip129dRepIDBech32: undefined,
             regStakeKeys: [],
             unregStakeKeys: [],
             regStakeKey: undefined,
@@ -463,6 +465,8 @@ class App extends React.Component {
             dRepKey: undefined,
             cip105dRepID: undefined,
             cip105dRepIDBech32: undefined,
+            cip1295dRepID: undefined,
+            cip129dRepIDBech32: undefined,
             regStakeKeys: [],
             unregStakeKeys: [],
             regStakeKey: undefined,
@@ -637,10 +641,10 @@ class App extends React.Component {
         try {
             // From wallet get pub DRep key 
             const dRepKey = await this.API.cip95.getPubDRepKey();
-            const cip105dRepID = (PublicKey.from_hex(dRepKey)).hash();
+            const pubDRepKeyHash = (PublicKey.from_hex(dRepKey)).hash();
             this.setState({dRepKey});
-            this.setState({cip105dRepID : cip105dRepID.to_hex()});
-            const cip105dRepIDBech32 = cip105dRepID.to_bech32('drep');
+            this.setState({cip105dRepID : pubDRepKeyHash.to_hex()});
+            const cip105dRepIDBech32 = pubDRepKeyHash.to_bech32('drep');
             this.setState({cip105dRepIDBech32});
             // Default use the wallet's cip105dRepID for DRep registration
             this.setState({dRepRegTarget: cip105dRepIDBech32});
@@ -648,6 +652,9 @@ class App extends React.Component {
             this.setState({voteDelegationTarget: cip105dRepIDBech32});
             // Default use the wallet's cip105dRepID for combo Vote delegation target
             this.setState({comboVoteDelegTarget: cip105dRepIDBech32});
+
+            // cip1295dRepID: undefined
+            // cip129dRepIDBech32: undefined,
         } catch (err) {
             console.log(err)
         }
