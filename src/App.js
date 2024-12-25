@@ -25,9 +25,9 @@ import {
     VoteDelegation,
     DRep,
     Anchor,
-    DrepRegistration,
-    DrepUpdate,
-    DrepDeregistration,
+    DRepRegistration,
+    DRepUpdate,
+    DRepDeregistration,
     VotingBuilder,
     Voter,
     GovernanceActionId,
@@ -1283,13 +1283,13 @@ class App extends React.Component {
                 const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
                 const anchor = Anchor.new(anchorURL, anchorHash);
                 // Create cert object
-                dRepRegCert = DrepRegistration.new_with_anchor(
+                dRepRegCert = DRepRegistration.new_with_anchor(
                     dRepCred,
                     BigNum.from_str(this.state.dRepDeposit),
                     anchor
                 );
             } else {
-                dRepRegCert = DrepRegistration.new(
+                dRepRegCert = DRepRegistration.new(
                     dRepCred,
                     BigNum.from_str(this.state.dRepDeposit),
                 );
@@ -1321,12 +1321,12 @@ class App extends React.Component {
                 const anchorHash = AnchorDataHash.from_hex(this.state.cip95MetadataHash);
                 const anchor = Anchor.new(anchorURL, anchorHash);
                 // Create cert object
-                dRepUpdateCert = DrepUpdate.new_with_anchor(
+                dRepUpdateCert = DRepUpdate.new_with_anchor(
                     dRepCred,
                     anchor
                 );
             } else {
-                dRepUpdateCert = DrepUpdate.new(
+                dRepUpdateCert = DRepUpdate.new(
                     dRepCred,
                 );
             };
@@ -1350,7 +1350,7 @@ class App extends React.Component {
             // Use the wallet's DRep ID
             const dRepKeyHash = Ed25519KeyHash.from_hex(this.state.cip105dRepID);
             const dRepCred = Credential.from_keyhash(dRepKeyHash);
-            const dRepRetirementCert = DrepDeregistration.new(
+            const dRepRetirementCert = DRepDeregistration.new(
                 dRepCred,
                 BigNum.from_str(this.state.dRepDeposit),
             );
@@ -1373,7 +1373,7 @@ class App extends React.Component {
         try {
             // Use wallet's DRep key
             const dRepKeyHash = Ed25519KeyHash.from_hex(this.state.cip105dRepID);
-            const voter = Voter.new_drep(Credential.from_keyhash(dRepKeyHash))
+            const voter = Voter.new_drep_credential(Credential.from_keyhash(dRepKeyHash))
             // What is being voted on
             const govActionId = GovernanceActionId.new(
                 TransactionHash.from_hex(this.state.voteGovActionTxHash), this.state.voteGovActionIndex);
@@ -1565,7 +1565,8 @@ class App extends React.Component {
             // remove member if provided
             let removeCred;
             if (this.state.committeeRemove){
-                removeCred = Credentials.new().add(await this.handleInputToCredential(this.state.committeeRemove))
+                removeCred = Credentials.new()
+                removeCred.add(await this.handleInputToCredential(this.state.committeeRemove))
             } else {
                 removeCred = Credentials.new()
             }
