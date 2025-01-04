@@ -1847,7 +1847,7 @@ class App extends React.Component {
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
-                                helperText="DRep ID | abstain | no confidence"
+                                helperText="CIP-105 DRep ID | abstain | no confidence"
                                 label="Target of Vote Delegation:"
                             >
                                 <InputGroup
@@ -1876,7 +1876,7 @@ class App extends React.Component {
                         <div style={{marginLeft: "20px"}}>
 
                             <FormGroup
-                                label="DRep ID:"
+                                label="CIP-105 DRep ID:"
                                 helperText="(Bech32 or Hex encoded)"
                             >
                                 <InputGroup
@@ -2402,7 +2402,7 @@ class App extends React.Component {
                                 </FormGroup>
                                 <FormGroup
                                     label="Target of Vote Delegation:"
-                                    helperText="DRep ID | abstain | no confidence"
+                                    helperText="CIP-105 DRep ID | abstain | no confidence"
                                 >
                                     <InputGroup
                                         disabled={false}
@@ -2470,7 +2470,7 @@ class App extends React.Component {
                             <div style={{marginLeft: "20px"}}>
                                 <FormGroup
                                     label="Target of Vote Delegation:"
-                                    helperText="DRep ID | abstain | no confidence"
+                                    helperText="CIP-105 DRep ID | abstain | no confidence"
                                 >
                                     <InputGroup
                                         disabled={false}
@@ -2521,7 +2521,7 @@ class App extends React.Component {
                                 </FormGroup>
                                 <FormGroup
                                     label="Target of Vote Delegation:"
-                                    helperText="DRep ID | abstain | no confidence"
+                                    helperText="CIP-105 DRep ID | abstain | no confidence"
                                 >
                                     <InputGroup
                                         disabled={false}
