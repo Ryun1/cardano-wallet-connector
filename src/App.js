@@ -1790,8 +1790,10 @@ class App extends React.Component {
                 <hr style={{marginTop: "40px", marginBottom: "10px"}}/>
                 <h1>CIP-95 🤠</h1>
                 <p><span style={{fontWeight: "bold"}}>.cip95.getPubDRepKey(): </span>{this.state.dRepKey}</p>
-                <p><span style={{fontWeight: "lighter"}}>CIP-105 Hex DRep ID (Pub DRep Key hash): </span>{this.state.cip105dRepID}</p>
-                <p><span style={{fontWeight: "lighter"}}>CIP-105 Bech32 DRep ID (Pub DRep Key hash): </span>{this.state.cip105dRepIDBech32}</p>
+                <p><span style={{fontWeight: "lighter"}}>CIP-129 Hex DRep ID (byte + byte + Pub DRep key hash): </span>{this.state.cip129dRepID}</p>
+                <p><span style={{fontWeight: "lighter"}}>CIP-129 Bech32 DRep ID: </span>{this.state.cip129dRepIDBech32}</p>
+                <p><span style={{fontWeight: "lighter"}}>Legacy CIP-105 Hex DRep ID (Pub DRep key hash): </span>{this.state.cip105dRepID}</p>
+                <p><span style={{fontWeight: "lighter"}}>Legacy CIP-105 Bech32 DRep ID: </span>{this.state.cip105dRepIDBech32}</p>
                 <p><span style={{ fontWeight: "bold" }}>.cip95.getRegisteredPubStakeKeys():</span></p>
                 <ul>{this.state.regStakeKeys && this.state.regStakeKeys.length > 0 ? this.state.regStakeKeys.map((item, index) => ( <li style={{ fontSize: "12px" }} key={index}>{item}</li>)) : <li>No registered public stake keys returned.</li>}</ul>
                 <p><span style={{fontWeight: "lighter"}}> First registered Stake Key Hash (hex): </span>{this.state.regStakeKeyHashHex}</p>
