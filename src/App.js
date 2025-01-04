@@ -1852,7 +1852,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({voteDelegationTarget: event.target.value})}
                                     value={this.state.voteDelegationTarget}
                                 />
@@ -1863,7 +1862,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({voteDelegationStakeCred: event.target.value})}
                                     value={this.state.voteDelegationStakeCred}
                                 />
@@ -1881,7 +1879,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({dRepRegTarget: event.target.value})}
                                     value={this.state.dRepRegTarget}
                                 />
@@ -1893,7 +1890,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({dRepDeposit : event.target.value})}
                                     value={this.state.dRepDeposit}
                                 />
@@ -1905,7 +1901,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
                                 />
                             </FormGroup>
@@ -1916,7 +1911,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
                                 />
                             </FormGroup>
@@ -1932,7 +1926,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
                                 />
                             </FormGroup>
@@ -1943,7 +1936,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
                                 />
                             </FormGroup>
@@ -1960,7 +1952,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({dRepDeposit : event.target.value})}
                                     value={this.state.dRepDeposit}
                                 />
@@ -1978,7 +1969,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({voteGovActionTxHash: event.target.value})}
                                 />
                             </FormGroup>
@@ -1989,7 +1979,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({voteGovActionTxIndex: event.target.value})}
                                 />
                             </FormGroup>
@@ -2000,7 +1989,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({voteChoice: event.target.value})}
                                 />
                             </FormGroup>
@@ -2010,7 +1998,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
                                     defaultValue={this.state.cip95MetadataURL}
                                 />
@@ -2022,7 +2009,6 @@ class App extends React.Component {
                             >
                                 <InputGroup
                                     disabled={false}
-                                    leftIcon="id-number"
                                     onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
                                 />
                             </FormGroup>
@@ -2043,7 +2029,6 @@ class App extends React.Component {
                         >
                         <InputGroup
                             disabled={false}
-                            leftIcon="id-number"
                             onChange={(event) => this.setState({govActDeposit : event.target.value})}
                             value={this.state.govActDeposit}
                         />
@@ -2054,7 +2039,6 @@ class App extends React.Component {
                         >
                         <InputGroup
                             disabled={false}
-                            leftIcon="id-number"
                             onChange={(event) => this.setState({gaMetadataURL: event.target.value})}
                             defaultValue={this.state.gaMetadataURL}
                         />
@@ -2065,7 +2049,6 @@ class App extends React.Component {
                         >
                         <InputGroup
                             disabled={false}
-                            leftIcon="id-number"
                             onChange={(event) => this.setState({gaMetadataHash: event.target.value})}
                             defaultValue={this.state.gaMetadataHash}
                         />
@@ -2081,7 +2064,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2092,7 +2074,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2111,7 +2092,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({committeeAdd: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2121,7 +2101,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({committeeExpiry: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2132,7 +2111,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({committeeRemove: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2143,7 +2121,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({committeeQuorum: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2154,7 +2131,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2165,7 +2141,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2182,7 +2157,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({constURL: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2192,7 +2166,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({constHash: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2203,7 +2176,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({guardRailsScriptHash: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2214,7 +2186,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2225,7 +2196,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2243,7 +2213,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({hardForkUpdateMajor: event.target.value})}
                                         defaultValue={this.state.hardForkUpdateMajor}
                                     />
@@ -2255,7 +2224,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({hardForkUpdateMinor: event.target.value})}
                                         defaultValue={this.state.hardForkUpdateMinor}
                                     />
@@ -2267,7 +2235,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2278,7 +2245,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2297,7 +2263,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionHash: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2308,7 +2273,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({govActPrevActionIndex: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2319,7 +2283,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         value={this.state.guardrailScript}
                                         onChange={(event) => this.setState({guardrailScript: event.target.value})}
                                     />
@@ -2337,7 +2300,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({treasuryTarget: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2347,7 +2309,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({treasuryWithdrawalAmount: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2358,7 +2319,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         value={this.state.guardrailScript}
                                         onChange={(event) => this.setState({guardrailScript: event.target.value})}
                                     />
@@ -2395,7 +2355,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboPoolHash: event.target.value})}
                                         value={this.state.comboPoolHash}
                                     />
@@ -2406,7 +2365,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboVoteDelegTarget: event.target.value})}
                                         value={this.state.comboVoteDelegTarget}
                                     />
@@ -2417,7 +2375,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboStakeCred: event.target.value})}
                                         value={this.state.comboStakeCred}
                                     />
@@ -2434,7 +2391,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboPoolHash: event.target.value})}
                                         value={this.state.comboPoolHash}
                                     />
@@ -2445,7 +2401,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboStakeCred: event.target.value})}
                                         value={this.state.comboStakeCred}
                                     />
@@ -2457,7 +2412,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboStakeRegCoin : event.target.value})}
                                         value={this.state.comboStakeRegCoin}
                                     />
@@ -2474,7 +2428,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboVoteDelegTarget: event.target.value})}
                                         value={this.state.comboVoteDelegTarget}
                                     />
@@ -2485,7 +2438,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboStakeCred: event.target.value})}
                                         value={this.state.comboStakeCred}
                                     />
@@ -2497,7 +2449,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboStakeRegCoin : event.target.value})}
                                         value={this.state.comboStakeRegCoin}
                                     />
@@ -2514,18 +2465,16 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboPoolHash: event.target.value})}
                                         value={this.state.comboPoolHash}
                                     />
                                 </FormGroup>
                                 <FormGroup
                                     label="Target of Vote Delegation:"
-                                    helperText="CIP-105 DRep ID | abstain | no confidence"
+                                    helperText="DRep ID | abstain | no confidence"
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboVoteDelegTarget: event.target.value})}
                                         value={this.state.comboVoteDelegTarget}
                                     />
@@ -2536,7 +2485,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboStakeCred: event.target.value})}
                                         value={this.state.comboStakeCred}
                                     />
@@ -2548,7 +2496,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({comboStakeRegCoin : event.target.value})}
                                         value={this.state.comboStakeRegCoin}
                                     />
@@ -2577,7 +2524,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({ccColdCred : event.target.value})}
                                         value={this.state.ccColdCred}
                                     />
@@ -2589,7 +2535,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({ccHotCred : event.target.value})}
                                         value={this.state.ccHotCred}
                                     />
@@ -2607,7 +2552,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({ccColdCred : event.target.value})}
                                         value={this.state.ccColdCred}
                                     />
@@ -2618,7 +2562,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({cip95MetadataURL: event.target.value})}
                                         defaultValue={this.state.cip95MetadataURL}
                                     />
@@ -2630,7 +2573,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({cip95MetadataHash: event.target.value})}
                                     />
                                 </FormGroup>
@@ -2669,7 +2611,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({stakeKeyReg : event.target.value})}
                                         value={this.state.stakeKeyReg}
                                     />
@@ -2680,7 +2621,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({stakeKeyCoin : event.target.value})}
                                         value={this.state.stakeKeyCoin}
                                     />
@@ -2709,7 +2649,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({stakeKeyUnreg : event.target.value})}
                                         value={this.state.stakeKeyUnreg}
                                     />
@@ -2721,7 +2660,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({stakeKeyCoin : event.target.value})}
                                         value={this.state.stakeKeyCoin}
                                     />
@@ -2740,7 +2678,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({treasuryDonationAmount : event.target.value})}
                                         value={this.state.treasuryDonationAmount}
                                     />
@@ -2758,7 +2695,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({treasuryValueAmount : event.target.value})}
                                         value={this.state.treasuryValueAmount}
                                     />
@@ -2776,7 +2712,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({mirStakeCred : event.target.value})}
                                         defaultValue={this.state.mirStakeCred}
                                     />
@@ -2789,7 +2724,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({mirAmount : event.target.value})}
                                         defaultValue={this.state.mirAmount}
                                     />
@@ -2802,7 +2736,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({mirPot : event.target.value})}
                                         defaultValue={this.state.mirPot}
                                     />
@@ -2823,7 +2756,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({genesisHash : event.target.value})}
                                         value={this.state.genesisHash}
                                     />
@@ -2836,7 +2768,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({genesisDelegationHash : event.target.value})}
                                         value={this.state.genesisDelegationHash}
                                     />
@@ -2849,7 +2780,6 @@ class App extends React.Component {
                                 >
                                     <InputGroup
                                         disabled={false}
-                                        leftIcon="id-number"
                                         onChange={(event) => this.setState({vrfKeyHash : event.target.value})}
                                         value={this.state.vrfKeyHash}
                                     />
