@@ -1,6 +1,6 @@
 {
     "homepage": "http://ryun1.github.io/cip95-cardano-wallet-connector",
-    "name": "cardano-wallet-connector",
+    "name": "cip95-cardano-wallet-connector",
     "version": "1.9.1",
     "private": true,
     "dependencies": {
