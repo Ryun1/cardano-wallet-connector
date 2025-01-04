@@ -2,18 +2,18 @@
 
 | Tag | Feature Details | Deployed Currently? |
 | --- | --------------- | ------------------- |
-| [1.8.1](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.8.1) | [Here](./CHANGELOG.md#180) | No |
-| [1.9.0](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.9.0) | [Here](./CHANGELOG.md#190) | [Yes](https://ryun1.github.io/cip95-cardano-wallet-connector/) |
-
+| [1.9.0](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.9.0) | [Here](./CHANGELOG.md#190) | no |
+| [1.9.1](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.9.1) | [Here](./CHANGELOG.md#190) | [Yes](https://ryun1.github.io/cip95-cardano-wallet-connector/) |
 
 ### 1.9.1
 
-- Use total collateral and collateral return for better compatibility
-- Update code to support multiple proposals in single transaction
+- bump CSL to 12.1.1
+- add CIP-129 support for DRep IDs
 
 ### 1.9.2 (In progress)
 
 - `.cip95.signData`
+- Use total collateral and collateral return for better compatibility
 - refactor
 
 ## To Develop
@@ -36,10 +36,10 @@ This should launch a local dev environment at [http://localhost:3000](http://loc
 
 ### To Deploy
 
-1. Change the `"homepage" ` field in [package.json](./package.json) to your repo.
-   
+1. Change the `"homepage"` field in [package.json](./package.json) to your repo.
+
 2. Deploy to github pages
-   
+
 ```bash
 sudo npm run deploy
 ```

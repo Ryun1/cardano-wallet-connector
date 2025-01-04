@@ -1,26 +1,29 @@
 # Tags
 
-
 ### 1.9.1
-- Use total collateral and collateral return for better compatibility
-- Update code to support multiple proposals in single transaction
 
+- bump CSL to 12.1.1
+- add CIP-129 support for DRep IDs
 
 ### 1.9.0
+
 - add support for guard rails script
 - Fixed `InputSetEmptyUTxO` when transaction had implicit inputs
 - Updated default params
-- Minor improvements to governance actions 
+- Minor improvements to governance actions
 
 ### 1.8.0
+
 - Bumped to CSL 12 beta 2
 
 ### 1.8.0
+
 - Bumped to CSL 12 alpha 19
 - Added proposal policy things
 - Added some basic UI error handling
 
 ### 1.6.4
+
 - Added Treasury donations
 - Added Treasury values
 - Fixed linking previous governance actions
@@ -28,10 +31,12 @@
 - Added genesis certificate
 
 ### 1.6.3
+
 - Fixed combination certs
 - Added CC certs
 
 ### 1.6.2
+
 - multiple certs in one transaction
 - multiple votes in one transaction
 - multiple goActs in one transaction
@@ -40,6 +45,7 @@
 ![](./images/1.6.2.PNG)
 
 ### 1.6.1
+
 - General UI improvements
 - Improved update committee
 - Improved handelling of refunds
@@ -48,6 +54,7 @@
 ![](./images/1.6.1.PNG)
 
 ### 1.6.0
+
 - Add in combination certs
 - Unhardcoded DRep and Gov Act deposits
 - Refactor and split code
@@ -55,9 +62,11 @@
 ![](./images/1.6.0.PNG)
 
 ### 1.5.8
+
 - Added new Conway Stake Reg and Unreg certs
 
 ### 1.5.7
+
 - Bump to CSL alpha 11
 - UI refresh
 - Fix info action
@@ -70,6 +79,7 @@
 ![](./images/1.5.7.PNG)
 
 ### 1.5.6
+
 - Added treasury withdrawal
 - WIP Info action
 - WIP Update committee
@@ -78,12 +88,14 @@
 ![](./images/1.5.6.PNG)
 
 ### 1.5.5
+
 - CSL Alpha v10
 - Fixed delegating to predefined DReps
 
 ![](./images/1.5.5.PNG)
 
-### 1.5.4 
+### 1.5.4
+
 - CSL Alpha v8
 - Fixed New Const Gov Act
 
