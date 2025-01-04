@@ -84,6 +84,7 @@ import {
     buildMIRCert,
     buildGenesisKeyDelegationCert,
 } from './utils.js';
+let { bech32 } = require('bech32')
 
 let Buffer = require('buffer/').Buffer
 
@@ -123,6 +124,8 @@ class App extends React.Component {
             dRepKey: undefined,
             cip105dRepID: undefined,
             cip105dRepIDBech32: undefined,
+            cip129dRepID: undefined,
+            cip129dRepIDBech32: undefined,
             regStakeKeys: [],
             unregStakeKeys: [],
             regStakeKey: undefined,
@@ -463,6 +466,8 @@ class App extends React.Component {
             dRepKey: undefined,
             cip105dRepID: undefined,
             cip105dRepIDBech32: undefined,
+            cip129dRepID: undefined,
+            cip129dRepIDBech32: undefined,
             regStakeKeys: [],
             unregStakeKeys: [],
             regStakeKey: undefined,
@@ -642,6 +647,16 @@ class App extends React.Component {
             this.setState({cip105dRepID : cip105dRepID.to_hex()});
             const cip105dRepIDBech32 = cip105dRepID.to_bech32('drep');
             this.setState({cip105dRepIDBech32});
+            
+            // add CIP-129 DRep ID
+            const cip129dRepID = 22 + cip105dRepID.to_hex();
+            this.setState({cip129dRepID});
+
+            // bech32 encode the CIP-129 DRep ID
+            const words = bech32.toWords(Buffer.from(cip129dRepID, "hex"));
+            const cip129dRepIDBech32 = bech32.encode('drep', words);
+            this.setState({cip129dRepIDBech32});
+
             // Default use the wallet's cip105dRepID for DRep registration
             this.setState({dRepRegTarget: cip105dRepIDBech32});
             // Default use the wallet's cip105dRepID for Vote delegation target
