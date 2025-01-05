@@ -81,7 +81,7 @@ export function buildStakeKeyRegCert(certBuilder, stakeCredential, withCoin=fals
         const stakeCred = keyHashStringToCredential(stakeCredential);
         let stakeKeyRegCert
         if (withCoin){
-            stakeKeyRegCert = StakeRegistration.new_with_coin(stakeCred, stringToBigNum(deposit));
+            stakeKeyRegCert = StakeRegistration.new_with_explicit_deposit(stakeCred, stringToBigNum(deposit));
         } else {
             stakeKeyRegCert = StakeRegistration.new(stakeCred);
         }
@@ -99,7 +99,7 @@ export function buildStakeKeyUnregCert(certBuilder, stakeCredential, withCoin=fa
             const stakeCred = keyHashStringToCredential(stakeCredential);
             let stakeKeyUnregCert
             if (withCoin){
-                stakeKeyUnregCert = StakeDeregistration.new_with_coin(stakeCred, stringToBigNum(deposit));
+                stakeKeyUnregCert = StakeDeregistration.new_with_explicit_deposit(stakeCred, stringToBigNum(deposit));
             } else {
                 stakeKeyUnregCert = StakeDeregistration.new(stakeCred);
             }
