@@ -906,21 +906,18 @@ class App extends React.Component {
             const shelleyOutputAddress = Address.from_bech32(this.state.usedAddress);
             const shelleyChangeAddress = Address.from_bech32(this.state.changeAddress);
             
-            // Add output of 1 ADA plus total needed for refunds 
-            let outputValue = BigNum.from_str('1000000')
-
             // Ensure the total output is larger than total implicit inputs (refunds / withdrawals)
             if (!txBuilder.get_implicit_input().is_zero()){
-                outputValue = outputValue.checked_add(txBuilder.get_implicit_input().coin())
+                const outputValue = outputValue.checked_add(txBuilder.get_implicit_input().coin())
+                // add output to the transaction
+                txBuilder.add_output(
+                    TransactionOutput.new(
+                        shelleyOutputAddress,
+                        Value.new(outputValue)
+                    ),
+                );
             }
 
-            // add output to the transaction
-            txBuilder.add_output(
-                TransactionOutput.new(
-                    shelleyOutputAddress,
-                    Value.new(outputValue)
-                ),
-            );
             // Find the available UTxOs in the wallet and use them as Inputs for the transaction
             await this.getUtxos();
             const txUnspentOutputs = await this.getTxUnspentOutputs();
