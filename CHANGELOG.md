@@ -1,5 +1,10 @@
 # Tags
 
+### 1.9.2
+
+- fix bug with creating 1 ada utxos
+- fix Conway stake reg/dereg certificates
+
 ### 1.9.1
 
 - bump CSL to 12.1.1

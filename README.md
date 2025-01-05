@@ -2,15 +2,15 @@
 
 | Tag | Feature Details | Deployed Currently? |
 | --- | --------------- | ------------------- |
-| [1.9.0](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.9.0) | [Here](./CHANGELOG.md#190) | no |
-| [1.9.1](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.9.1) | [Here](./CHANGELOG.md#190) | [Yes](https://ryun1.github.io/cip95-cardano-wallet-connector/) |
+| [1.9.1](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.9.1) | [Here](./CHANGELOG.md#191) | No |
+| [1.9.2](https://github.com/Ryun1/cip95-cardano-wallet-connector/releases/tag/1.9.2) | [Here](./CHANGELOG.md#192) | [Yes](https://ryun1.github.io/cip95-cardano-wallet-connector/) |
 
-### 1.9.1
+### 1.9.2
 
-- bump CSL to 12.1.1
-- add CIP-129 support for DRep IDs
+- fix bug with creating 1 ada utxos
+- fix Conway stake reg/dereg certificates
 
-### 1.9.2 (In progress)
+### 1.9.3 (In progress)
 
 - `.cip95.signData`
 - Use total collateral and collateral return for better compatibility
