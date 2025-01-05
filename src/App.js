@@ -908,7 +908,7 @@ class App extends React.Component {
             
             // Ensure the total output is larger than total implicit inputs (refunds / withdrawals)
             if (!txBuilder.get_implicit_input().is_zero()){
-                const outputValue = outputValue.checked_add(txBuilder.get_implicit_input().coin())
+                const outputValue = txBuilder.get_implicit_input().coin();
                 // add output to the transaction
                 txBuilder.add_output(
                     TransactionOutput.new(
@@ -2853,7 +2853,7 @@ class App extends React.Component {
                 <p><span style={{fontWeight: "bold"}}>CborHex Tx: </span>{this.state.cip95ResultTx}</p>
                 <hr style={{marginTop: "2px", marginBottom: "10px"}}/>
                 
-                <h5>💖 Powered by CSL 13.2.0 💖</h5>
+                <h5>💖 Powered by CSL 12.1.1 💖</h5>
             </div>
         )
     }
