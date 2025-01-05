@@ -99,7 +99,7 @@ export function buildStakeKeyUnregCert(certBuilder, stakeCredential, withCoin=fa
             const stakeCred = keyHashStringToCredential(stakeCredential);
             let stakeKeyUnregCert
             if (withCoin){
-                stakeKeyUnregCert = StakeDeregistration.new_with_explicit_deposit(stakeCred, stringToBigNum(deposit));
+                stakeKeyUnregCert = StakeDeregistration.new_with_explicit_refund(stakeCred, stringToBigNum(deposit));
             } else {
                 stakeKeyUnregCert = StakeDeregistration.new(stakeCred);
             }
