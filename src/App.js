@@ -1746,7 +1746,7 @@ class App extends React.Component {
             <div style={{margin: "20px"}}>
 
                 <h1>✨demos CIP-95 dApp✨</h1>
-                <h4>✨v1.9.2✨</h4>
+                <h4>✨v1.10.0✨</h4>
 
                 <input type="checkbox" checked={this.state.selectedCIP95} onChange={this.handleCIP95Select}/> Enable CIP-95?
 
